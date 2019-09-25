@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_coins/addCoin.dart';
 
 class Me extends StatefulWidget {
   @override
@@ -65,6 +66,12 @@ class _MeState extends State<Me> {
                   //borderRadius: BorderRadius.circular(16.0),
                 ),
                 child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddCoin()),
+                    );
+                  },
                   title: Text('My Coins', style: TextStyle(fontSize: 20,),),
                   subtitle: Text('Setup your HabitCoins'),
                 ),

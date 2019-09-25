@@ -136,7 +136,7 @@ type: BottomNavigationBarType.fixed,
           ),
           new BottomNavigationBarItem(
             icon: Icon(Icons.toll),
-            title: Text('My Coins'),
+            title: Text('HabitCoins'),
           ),
           new BottomNavigationBarItem(
             icon: Icon(Icons.insert_chart),

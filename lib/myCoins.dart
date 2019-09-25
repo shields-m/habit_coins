@@ -1,21 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:habit_coins/models.dart';
-
-import 'package:habit_coins/localData.dart';
+import 'package:habit_coins/schedule.dart';
+import 'package:intl/intl.dart';
 
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
 class MyCoins extends StatefulWidget {
   @override
-  List<Coin> _coins = [
+  
+ 
+  
+  MyCoins(){
+
+    item = new ScheduleItem();
+    item.FirstDate = DateTime.now().add(Duration(days: -2));
+    item.HabitCoin = new Coin('Run', Icons.directions_run);
+    item.DaysOfWeek = ['Monday','Wednesday','Saturday'];
+
+    schedule.AddItem(item);
+
+
+    item = new ScheduleItem();
+    item.FirstDate = DateTime.now().add(Duration(days: -2));
+    item.HabitCoin = new Coin('Eat', Icons.fastfood);
+    item.DaysOfWeek = ['Tuesday','Sunday',];
+    schedule.AddItem(item);
+
+    item = new ScheduleItem();
+    item.FirstDate = DateTime.now().add(Duration(days: -2));
+    item.HabitCoin = new Coin('Meet Frields', Icons.people);
+    item.DaysOfWeek = ['Wednesday','Sunday',];
+
+
+
+    schedule.AddItem(item);
+  }
+  
+  
+/*  List<Coin> _coins = [
     new Coin('Run', Icons.directions_run),
     new Coin('Eat', Icons.fastfood),
     new Coin('Wake Up Early', Icons.alarm),
     new Coin('Meet Friends', Icons.people),
     new Coin('Be Happy', Icons.tag_faces),
     new Coin('Expand My Horizons', Icons.zoom_out_map),
-  ];
+  ];*/
+
+  Schedule schedule = new Schedule();
+  ScheduleItem item = new ScheduleItem();
 
 
 
@@ -32,9 +64,11 @@ class MyCoins extends StatefulWidget {
 class _MyCoinsState extends State<MyCoins> {
   @override
   Widget build(BuildContext context) {
-    fileWriter w = new fileWriter();
-    w.saveFile(this.widget._coins);
+   // fileWriter w = new fileWriter();
+    //w.saveFile(this.widget._coins);
 
+
+    
 
     return Column(
       children: <Widget>[
@@ -74,7 +108,7 @@ class _MyCoinsState extends State<MyCoins> {
             ],
           ),
         ),
-        CoinRow( _coinRowStateKey,this.widget._coins,),
+        CoinRow( _coinRowStateKey,this.widget.schedule.getCoinsForDay(this.widget.selectedDate),),
         new Expanded(child: new JarWidget(this.widget.jar)),
       ],
     );
@@ -93,14 +127,14 @@ class _MyCoinsState extends State<MyCoins> {
     setState(() {
       this.widget.selectedDate = dateTime;
 
-      this.widget._coins = [
+     /* this.widget._coins = [
         new Coin('Run', Icons.directions_run),
         new Coin('Eat', Icons.fastfood),
         new Coin('Wake Up Early', Icons.alarm),
         new Coin('Meet Friends', Icons.people),
         new Coin('Be Happy', Icons.tag_faces),
         new Coin('Expand My Horizons', Icons.zoom_out_map),
-      ];
+      ];*/
 
       this.widget.jar = new Jar();
     });
