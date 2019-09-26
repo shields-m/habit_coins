@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:habit_coins/addCoin.dart';
+import 'package:habit_coins/mySchedule.dart';
+import 'package:habit_coins/models.dart';
+import 'package:habit_coins/schedule.dart';
+import 'package:habit_coins/globals.dart' as globals;
 
 class Me extends StatefulWidget {
   @override
@@ -53,6 +56,7 @@ class _MeState extends State<Me> {
                 child: ListTile(
                   title: Text('My Name', style: TextStyle(fontSize: 20,)),
                   subtitle: Text('Mark Shields'),
+                  trailing: Icon(Icons.person),
                 ),
               ),
               Container(
@@ -67,13 +71,12 @@ class _MeState extends State<Me> {
                 ),
                 child: ListTile(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AddCoin()),
-                    );
+
+                    openScheduleScreen();
                   },
-                  title: Text('My Coins', style: TextStyle(fontSize: 20,),),
+                  title: Text('My HabitCoins', style: TextStyle(fontSize: 20,),),
                   subtitle: Text('Setup your HabitCoins'),
+                  trailing: Icon(Icons.toll),
                 ),
               ),
               //Padding(padding: EdgeInsets.symmetric(vertical: 10),),
@@ -81,4 +84,18 @@ class _MeState extends State<Me> {
           ),
         );
   }
+
+    
+  void openScheduleScreen() async{
+final MySchedule page = new MySchedule();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => page),
+                    );
+
+                    
+
+  }
+
+
 }

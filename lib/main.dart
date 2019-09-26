@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_coins/myCoins.dart';
 import 'package:habit_coins/me.dart';
 import 'package:habit_coins/team.dart';
-
+import 'package:habit_coins/globals.dart' as globals;
 
 void main() => runApp(MyApp());
 
@@ -23,15 +23,14 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.blue,
+        
+        fontFamily: 'Lato',
         buttonColor: Color.fromARGB(255,53, 83, 165),
+        
         appBarTheme: AppBarTheme(
 
 
           color: Color.fromARGB(255,53, 83, 165),
-         /* iconTheme: IconThemeData(
-            color: Colors.green,
-          ),*/
-
           textTheme: TextTheme(
             title: TextStyle(
 
@@ -41,6 +40,8 @@ class MyApp extends StatelessWidget {
               fontSize: 24,
             ),
           ),
+
+         
         ),
       ),
       debugShowCheckedModeBanner: false,
@@ -52,6 +53,10 @@ class MyApp extends StatelessWidget {
 //Color.fromARGB(255,58, 83, 165),
 
 class MyHomePage extends StatefulWidget {
+
+
+
+
   MyHomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -80,17 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
     new Team(),
   ];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done

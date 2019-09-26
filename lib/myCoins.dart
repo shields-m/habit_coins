@@ -2,73 +2,55 @@ import 'package:flutter/material.dart';
 import 'package:habit_coins/models.dart';
 import 'package:habit_coins/schedule.dart';
 import 'package:intl/intl.dart';
-
+import 'package:habit_coins/globals.dart' as globals;
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
+
 class MyCoins extends StatefulWidget {
   @override
-  
- 
-  
-  MyCoins(){
-
+  MyCoins() {
     item = new ScheduleItem();
     item.FirstDate = DateTime.now().add(Duration(days: -2));
     item.HabitCoin = new Coin('Run', Icons.directions_run);
-    item.DaysOfWeek = ['Monday','Wednesday','Saturday'];
+    item.DaysOfWeek = ['Monday', 'Wednesday', 'Saturday'];
 
-    schedule.AddItem(item);
-
+    globals.mainSchedule.AddItem(item);
 
     item = new ScheduleItem();
     item.FirstDate = DateTime.now().add(Duration(days: -2));
     item.HabitCoin = new Coin('Eat', Icons.fastfood);
-    item.DaysOfWeek = ['Tuesday','Sunday',];
-    schedule.AddItem(item);
+    item.DaysOfWeek = [
+      'Tuesday',
+      'Sunday',
+    ];
+    globals.mainSchedule.AddItem(item);
 
     item = new ScheduleItem();
     item.FirstDate = DateTime.now().add(Duration(days: -2));
     item.HabitCoin = new Coin('Meet Frields', Icons.people);
-    item.DaysOfWeek = ['Wednesday','Sunday',];
+    item.DaysOfWeek = [
+      'Wednesday',
+      'Sunday',
+    ];
 
-
-
-    schedule.AddItem(item);
+    globals.mainSchedule.AddItem(item);
   }
-  
-  
-/*  List<Coin> _coins = [
-    new Coin('Run', Icons.directions_run),
-    new Coin('Eat', Icons.fastfood),
-    new Coin('Wake Up Early', Icons.alarm),
-    new Coin('Meet Friends', Icons.people),
-    new Coin('Be Happy', Icons.tag_faces),
-    new Coin('Expand My Horizons', Icons.zoom_out_map),
-  ];*/
 
-  Schedule schedule = new Schedule();
+
+
   ScheduleItem item = new ScheduleItem();
-
-
-
 
   Jar jar = new Jar();
   DateTime selectedDate = DateTime.now();
 
   _MyCoinsState createState() => _MyCoinsState();
-
-
-
 }
 
 class _MyCoinsState extends State<MyCoins> {
   @override
   Widget build(BuildContext context) {
-   // fileWriter w = new fileWriter();
+    // fileWriter w = new fileWriter();
     //w.saveFile(this.widget._coins);
-
-
-    
 
     return Column(
       children: <Widget>[
@@ -108,7 +90,10 @@ class _MyCoinsState extends State<MyCoins> {
             ],
           ),
         ),
-        CoinRow( _coinRowStateKey,this.widget.schedule.getCoinsForDay(this.widget.selectedDate),),
+        CoinRow(
+          _coinRowStateKey,
+          globals.mainSchedule.getCoinsForDay(this.widget.selectedDate),
+        ),
         new Expanded(child: new JarWidget(this.widget.jar)),
       ],
     );
@@ -127,7 +112,7 @@ class _MyCoinsState extends State<MyCoins> {
     setState(() {
       this.widget.selectedDate = dateTime;
 
-     /* this.widget._coins = [
+      /* this.widget._coins = [
         new Coin('Run', Icons.directions_run),
         new Coin('Eat', Icons.fastfood),
         new Coin('Wake Up Early', Icons.alarm),
@@ -140,8 +125,6 @@ class _MyCoinsState extends State<MyCoins> {
     });
   }
 }
-
-
 
 class JarWidget extends StatefulWidget {
   Jar _jar;
@@ -186,6 +169,15 @@ class _JarWidgetState extends State<JarWidget> {
                   .coins
                   .map(
                     (coin) => new GestureDetector(
+                        onVerticalDragEnd: (dir) {
+                          if (dir.velocity.pixelsPerSecond.direction < 0) {
+                            setState(() {
+                              _coinRowStateKey.currentState.addCoin(coin);
+                              this.widget._jar.coins.remove(coin);
+                            });
+                          }
+                          ;
+                        },
                         onLongPress: () {
                           showDialog(
                             context: context,
@@ -205,10 +197,9 @@ class _JarWidgetState extends State<JarWidget> {
                                     onPressed: () {
                                       print('Removing ' + coin.Name);
                                       setState(() {
-                                        _coinRowStateKey.currentState.addCoin(coin);
+                                        _coinRowStateKey.currentState
+                                            .addCoin(coin);
                                         this.widget._jar.coins.remove(coin);
-
-
                                       });
 
                                       Navigator.pop(context);
@@ -262,21 +253,14 @@ class CoinRow extends StatefulWidget {
 
   final List<Coin> coins;
 
-
-  const CoinRow( Key key, this.coins) : super(key: key);
-
+  const CoinRow(Key key, this.coins) : super(key: key);
 }
 
 class _CoinRowState extends State<CoinRow> {
-
-  void addCoin(Coin coin)
-  {
-setState(() {
-  this.widget.coins.insert(0, coin);
-
-});
-
-
+  void addCoin(Coin coin) {
+    setState(() {
+      this.widget.coins.insert(0, coin);
+    });
   }
 
   @override
