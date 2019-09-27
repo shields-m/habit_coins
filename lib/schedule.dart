@@ -17,10 +17,13 @@ class ScheduleItem
 
   Coin HabitCoin;
 
+bool Delete;
+
   ScheduleItem()
   {
     DaysOfWeek = new List();
     LastDate = DateTime.utc(9999);
+    Delete = false;
   }
 
 

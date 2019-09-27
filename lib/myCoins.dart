@@ -3,6 +3,7 @@ import 'package:habit_coins/models.dart';
 import 'package:habit_coins/schedule.dart';
 import 'package:intl/intl.dart';
 import 'package:habit_coins/globals.dart' as globals;
+import 'package:flutter_svg/flutter_svg.dart';
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
 
@@ -35,8 +36,6 @@ class MyCoins extends StatefulWidget {
 
     globals.mainSchedule.AddItem(item);
   }
-
-
 
   ScheduleItem item = new ScheduleItem();
 
@@ -152,95 +151,108 @@ class _JarWidgetState extends State<JarWidget> {
         }
       },
       builder: (context, Coin, List) {
-        return new Container(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          width: double.infinity,
-          margin: EdgeInsets.symmetric(
-            horizontal: 20,
-          ),
-          color: Colors.red.withOpacity(.5),
-          child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.start,
-              alignment: WrapAlignment.spaceAround,
-              verticalDirection: VerticalDirection.up,
-              children: this
-                  .widget
-                  ._jar
-                  .coins
-                  .map(
-                    (coin) => new GestureDetector(
-                        onVerticalDragEnd: (dir) {
-                          if (dir.velocity.pixelsPerSecond.direction < 0) {
-                            setState(() {
-                              _coinRowStateKey.currentState.addCoin(coin);
-                              this.widget._jar.coins.remove(coin);
-                            });
-                          }
-                          ;
-                        },
-                        onLongPress: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              // return object of type Dialog
-                              return AlertDialog(
-                                title: Text("Remove Coin?"),
-                                actions: <Widget>[
-                                  FlatButton(
-                                    child: Text("No"),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  FlatButton(
-                                    child: Text("Yes"),
-                                    onPressed: () {
-                                      print('Removing ' + coin.Name);
-                                      setState(() {
-                                        _coinRowStateKey.currentState
-                                            .addCoin(coin);
-                                        this.widget._jar.coins.remove(coin);
-                                      });
+        return Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            new SvgPicture.asset('assets/images/jar.svg',
+                semanticsLabel: 'Acme Logo'),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 70),
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(
+                horizontal: 20,
+              ),
+              //color: Colors.white.withOpacity(1),
+              //decoration: BoxDecoration(
+              //  image: DecorationImage(
+              //    image: AssetImage("assets/images/jar.png"),
+              //    fit: BoxFit.cover,
+              //  ),
+              //),
+              child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.start,
+                  alignment: WrapAlignment.spaceEvenly,
+                  verticalDirection: VerticalDirection.up,
+                  children: this
+                      .widget
+                      ._jar
+                      .coins
+                      .map(
+                        (coin) => new GestureDetector(
+                            onVerticalDragEnd: (dir) {
+                              if (dir.velocity.pixelsPerSecond.direction < 0) {
+                                setState(() {
+                                  _coinRowStateKey.currentState.addCoin(coin);
+                                  this.widget._jar.coins.remove(coin);
+                                });
+                              }
+                              ;
+                            },
+                            onLongPress: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  // return object of type Dialog
+                                  return AlertDialog(
+                                    title: Text("Remove HabitCoin?"),
+                                    actions: <Widget>[
+                                      FlatButton(
+                                        child: Text("No"),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                      FlatButton(
+                                        child: Text("Yes"),
+                                        onPressed: () {
+                                          print('Removing ' + coin.Name);
+                                          setState(() {
+                                            _coinRowStateKey.currentState
+                                                .addCoin(coin);
+                                            this.widget._jar.coins.remove(coin);
+                                          });
 
-                                      Navigator.pop(context);
-                                    },
-                                  )
-                                ],
-                                content: Text(
-                                    "Do you want to remove this coin from the jar?"),
+                                          Navigator.pop(context);
+                                        },
+                                      )
+                                    ],
+                                    content: Text(
+                                        "Do you want to remove this HabitCoin from the jar?"),
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                        child: new Container(
-                          margin: EdgeInsets.all(3),
-                          width: 75.0,
-                          height: 75.0,
-                          decoration: new BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.black,
-                              width: 3,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black54,
-                                spreadRadius: 1,
-                                blurRadius: 2,
-                                offset: Offset(0.0, 0),
-                              )
-                            ],
-                          ),
-                          child: Center(
-                            child: Icon(
-                              coin.Icon,
-                              size: 33,
-                            ),
-                          ),
-                        )),
-                  )
-                  .toList()),
+                            child: new Container(
+                              margin: EdgeInsets.all(3),
+                              width: 65.0,
+                              height: 65.0,
+                              decoration: new BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.black,
+                                  width: 3,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black54,
+                                    spreadRadius: 1,
+                                    blurRadius: 2,
+                                    offset: Offset(0.0, 0),
+                                  )
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  coin.Icon,
+                                  size: 30,
+                                ),
+                              ),
+                            )),
+                      )
+                      .toList()),
+            ),
+          ],
         );
       },
     );

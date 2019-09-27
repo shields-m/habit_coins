@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:habit_coins/myCoins.dart';
 import 'package:habit_coins/me.dart';
 import 'package:habit_coins/team.dart';
 import 'package:habit_coins/globals.dart' as globals;
 
-void main() => runApp(MyApp());
+void main() async{
+  //await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    
+      runApp(new MyApp());
+   
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
