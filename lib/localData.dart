@@ -1,22 +1,64 @@
 import 'dart:convert'; //to convert json to maps and vice versa
+import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:habit_coins/models.dart';
+import 'package:habit_coins/schedule.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:habit_coins/globals.dart' as globals;
 
-class fileWriter {
+Future<String> get _localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+  //print(directory.path);
+  return directory.path;
+}
 
-  fileWriter(){}
+Future<File> saveSchedule(Schedule s) async {
+  final path = await _localPath;
+  File file = File('$path/schedule.json');
 
-  Future<String> saveFile(List<Coin> coins) async {
-    JsonEncoder e = new JsonEncoder();
-    String x = e.convert(coins);
-    print(x);
+  return file.writeAsString(json.encode(s.toJson()));
+}
 
-    JsonDecoder d = new JsonDecoder();
-    List<dynamic> xx = d.convert(x);
 
-List<Coin> cs = xx.map((c) => new Coin.fromDynamic(c) ).toList();
-    print(cs);
+Future<File> saveDays(DayList d) async {
+  final path = await _localPath;
+  File file = File('$path/days.json');
 
-    return x;
+  return file.writeAsString(json.encode(d));
+}
+
+
+Future<DayList> loadDays() async {
+  // try {
+  final path = await _localPath;
+
+  File file = File('$path/days.json');
+  if (file.existsSync()) {
+    String contents = await file.readAsString();
+//print(contents);
+    globals.DaysLoaded = true;
+    return DayList.fromJson(json.decode(contents));
+  } else {
+    globals.DaysLoaded = true;
+    return new DayList();
   }
+
+}
+
+Future<Schedule> loadSchedule() async {
+  // try {
+  final path = await _localPath;
+
+  File file = File('$path/schedule.json');
+  if (file.existsSync()) {
+    String contents = await file.readAsString();
+//print(contents);
+    globals.ScheduleLoaded = true;
+    return Schedule.fromJson(json.decode(contents));
+  } else {
+    globals.ScheduleLoaded = true;
+    return new Schedule();
+  }
+
 }

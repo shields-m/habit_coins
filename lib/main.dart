@@ -5,17 +5,32 @@ import 'package:habit_coins/me.dart';
 import 'package:habit_coins/team.dart';
 import 'package:habit_coins/globals.dart' as globals;
 
-void main() async{
+import 'localData.dart';
+
+
+
+
+
+
+
+
+void main() {
   //await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    
+     
       runApp(new MyApp());
    
 }
 
 class MyApp extends StatelessWidget {
+
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    
+
+   
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -81,7 +96,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+ 
   int _currentIndex = 1;
 
   List<Widget> _children = [
@@ -91,9 +106,11 @@ class _MyHomePageState extends State<MyHomePage> {
     new Team(),
   ];
 
+
  
   @override
   Widget build(BuildContext context) {
+    
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //

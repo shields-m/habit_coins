@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:habit_coins/localData.dart';
 import 'package:habit_coins/models.dart';
 import 'package:habit_coins/schedule.dart';
 import 'package:intl/intl.dart';
@@ -6,41 +9,20 @@ import 'package:habit_coins/globals.dart' as globals;
 import 'package:flutter_svg/flutter_svg.dart';
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
+DateTime selectedDate;
+bool isFuture;
+bool isToday;
+bool isPast;
 
 class MyCoins extends StatefulWidget {
-  @override
   MyCoins() {
-    item = new ScheduleItem();
-    item.FirstDate = DateTime.now().add(Duration(days: -2));
-    item.HabitCoin = new Coin('Run', Icons.directions_run);
-    item.DaysOfWeek = ['Monday', 'Wednesday', 'Saturday'];
-
-    globals.mainSchedule.AddItem(item);
-
-    item = new ScheduleItem();
-    item.FirstDate = DateTime.now().add(Duration(days: -2));
-    item.HabitCoin = new Coin('Eat', Icons.fastfood);
-    item.DaysOfWeek = [
-      'Tuesday',
-      'Sunday',
-    ];
-    globals.mainSchedule.AddItem(item);
-
-    item = new ScheduleItem();
-    item.FirstDate = DateTime.now().add(Duration(days: -2));
-    item.HabitCoin = new Coin('Meet Frields', Icons.people);
-    item.DaysOfWeek = [
-      'Wednesday',
-      'Sunday',
-    ];
-
-    globals.mainSchedule.AddItem(item);
+    selectedDate =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    isFuture = false;
+    isToday = true;
+    isPast = false;
   }
-
-  ScheduleItem item = new ScheduleItem();
-
   Jar jar = new Jar();
-  DateTime selectedDate = DateTime.now();
 
   _MyCoinsState createState() => _MyCoinsState();
 }
@@ -50,52 +32,83 @@ class _MyCoinsState extends State<MyCoins> {
   Widget build(BuildContext context) {
     // fileWriter w = new fileWriter();
     //w.saveFile(this.widget._coins);
+    List<Coin> coins;
 
-    return Column(
-      children: <Widget>[
-        new Container(
-          padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-          child: new Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              new GestureDetector(
-                onTap: () {
-                  setDate(this.widget.selectedDate.add(new Duration(days: -1)));
-                },
-                child: new Icon(
-                  Icons.keyboard_arrow_left,
-                  size: 32,
+    if (globals.ScheduleLoaded && globals.DaysLoaded) {
+      if (isFuture) {
+        coins = globals.mainSchedule.getCoinsForDay(selectedDate);
+      } else {
+        coins = globals
+            .days.days[DateFormat("yMd").format(selectedDate)].pendingCoins;
+      }
+      return Column(
+        children: <Widget>[
+          new Container(
+            padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+            child: new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                new GestureDetector(
+                  onTap: () {
+                    setDate(selectedDate.add(new Duration(days: -1)));
+                  },
+                  child: new Icon(
+                    Icons.keyboard_arrow_left,
+                    size: 32,
+                  ),
                 ),
-              ),
-              new GestureDetector(
-                onTap: () {
-                  _selectDate();
-                },
-                child: new Text(
-                  new DateFormat("E dd LLL yyyy")
-                      .format(this.widget.selectedDate),
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                new GestureDetector(
+                  onTap: () {
+                    _selectDate();
+                  },
+                  child: new Text(
+                    new DateFormat("E dd LLL yyyy").format(selectedDate),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                  ),
                 ),
-              ),
-              new GestureDetector(
-                onTap: () {
-                  setDate(this.widget.selectedDate.add(new Duration(days: 1)));
-                },
-                child: new Icon(
-                  Icons.keyboard_arrow_right,
-                  size: 32,
+                new GestureDetector(
+                  onTap: () {
+                    setDate(selectedDate.add(new Duration(days: 1)));
+                  },
+                  child: new Icon(
+                    Icons.keyboard_arrow_right,
+                    size: 32,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        CoinRow(
-          _coinRowStateKey,
-          globals.mainSchedule.getCoinsForDay(this.widget.selectedDate),
-        ),
-        new Expanded(child: new JarWidget(this.widget.jar)),
-      ],
-    );
+          CoinRow(
+            _coinRowStateKey,
+            coins,
+          ),
+          new Expanded(child: new JarWidget(this.widget.jar)),
+        ],
+      );
+    } else {
+      loadSchedule().then((s) {
+        loadDays().then((d) {
+          setState(() {
+            Day today = new Day();
+            globals.days = d;
+            if (!globals.days.days
+                .containsKey(DateFormat("yMd").format(selectedDate))) {
+              today.coinsInJar = new List<Coin>();
+
+              today.pendingCoins = s.getCoinsForDay(selectedDate);
+              globals.days.days[DateFormat("yMd").format(selectedDate)] = today;
+            } else {
+              today = globals.days.days[DateFormat("yMd").format(selectedDate)];
+            }
+            this.widget.jar = new Jar.withCoins(today.coinsInJar);
+            globals.mainSchedule = s;
+            
+            //print(json.encode(globals.days));
+          });
+        });
+      });
+      return LinearProgressIndicator();
+    }
   }
 
   Future _selectDate() async {
@@ -109,18 +122,48 @@ class _MyCoinsState extends State<MyCoins> {
 
   void setDate(DateTime dateTime) {
     setState(() {
-      this.widget.selectedDate = dateTime;
+      DateTime newDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+      DateTime now = DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
-      /* this.widget._coins = [
-        new Coin('Run', Icons.directions_run),
-        new Coin('Eat', Icons.fastfood),
-        new Coin('Wake Up Early', Icons.alarm),
-        new Coin('Meet Friends', Icons.people),
-        new Coin('Be Happy', Icons.tag_faces),
-        new Coin('Expand My Horizons', Icons.zoom_out_map),
-      ];*/
+      selectedDate = newDate;
 
-      this.widget.jar = new Jar();
+      if (newDate.isAtSameMomentAs(now)) {
+        isToday = true;
+        isFuture = false;
+        isPast = false;
+        if (!globals.days.days.containsKey(DateFormat("yMd").format(newDate))) {
+          Day today = new Day();
+          today.coinsInJar = new List<Coin>();
+
+          today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
+          globals.days.days[DateFormat("yMd").format(newDate)] = today;
+        }
+        this.widget.jar = new Jar.withCoins(
+            globals.days.days[DateFormat("yMd").format(newDate)].coinsInJar);
+      } else if (newDate.isAfter(now)) {
+        isToday = false;
+        isFuture = true;
+        isPast = false;
+        this.widget.jar = new Jar();
+      } else if (newDate.isBefore(now)) {
+        isToday = false;
+        isFuture = false;
+        isPast = true;
+
+        if (!globals.days.days.containsKey(DateFormat("yMd").format(newDate))) {
+          Day today = new Day();
+          today.coinsInJar = new List<Coin>();
+
+          today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
+
+          globals.days.days[DateFormat("yMd").format(newDate)] = today;
+        }
+        this.widget.jar = new Jar.withCoins(
+            globals.days.days[DateFormat("yMd").format(newDate)].coinsInJar);
+      }
+
+      //print(json.encode(globals.days));
     });
   }
 }
@@ -141,12 +184,19 @@ class _JarWidgetState extends State<JarWidget> {
   Widget build(BuildContext context) {
     return DragTarget(
       onWillAccept: (data) {
-        return true;
+        return isToday;
       },
       onAccept: (Coin data) {
         if (!this.widget._jar.coins.contains(data)) {
           setState(() {
-            this.widget._jar.coins.add(data);
+            // this.widget._jar.coins.add(data);
+            globals.days.days[DateFormat("yMd").format(selectedDate)].coinsInJar
+                .add(data);
+            globals
+                .days.days[DateFormat("yMd").format(selectedDate)].pendingCoins
+                .remove(data);
+
+            globals.days.saveLocally();
           });
         }
       },
@@ -155,7 +205,7 @@ class _JarWidgetState extends State<JarWidget> {
           fit: StackFit.expand,
           children: <Widget>[
             new SvgPicture.asset('assets/images/jar.svg',
-                semanticsLabel: 'Acme Logo'),
+                semanticsLabel: 'Jar'),
             Container(
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 70),
               width: double.infinity,
@@ -180,47 +230,55 @@ class _JarWidgetState extends State<JarWidget> {
                       .map(
                         (coin) => new GestureDetector(
                             onVerticalDragEnd: (dir) {
-                              if (dir.velocity.pixelsPerSecond.direction < 0) {
+                              if (isToday &&
+                                  dir.velocity.pixelsPerSecond.direction < 0) {
                                 setState(() {
                                   _coinRowStateKey.currentState.addCoin(coin);
                                   this.widget._jar.coins.remove(coin);
+                                  globals.days.saveLocally();
                                 });
                               }
-                              ;
                             },
                             onLongPress: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  // return object of type Dialog
-                                  return AlertDialog(
-                                    title: Text("Remove HabitCoin?"),
-                                    actions: <Widget>[
-                                      FlatButton(
-                                        child: Text("No"),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      FlatButton(
-                                        child: Text("Yes"),
-                                        onPressed: () {
-                                          print('Removing ' + coin.Name);
-                                          setState(() {
-                                            _coinRowStateKey.currentState
-                                                .addCoin(coin);
-                                            this.widget._jar.coins.remove(coin);
-                                          });
+                              if (isToday) {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    // return object of type Dialog
+                                    return AlertDialog(
+                                      title: Text("Remove HabitCoin?"),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Text("No"),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                        FlatButton(
+                                          child: Text("Yes"),
+                                          onPressed: () {
+                                            print('Removing ' + coin.Name);
+                                            setState(() {
+                                              _coinRowStateKey.currentState
+                                                  .addCoin(coin);
+                                              this
+                                                  .widget
+                                                  ._jar
+                                                  .coins
+                                                  .remove(coin);
+                                              globals.days.saveLocally();
+                                            });
 
-                                          Navigator.pop(context);
-                                        },
-                                      )
-                                    ],
-                                    content: Text(
-                                        "Do you want to remove this HabitCoin from the jar?"),
-                                  );
-                                },
-                              );
+                                            Navigator.pop(context);
+                                          },
+                                        )
+                                      ],
+                                      content: Text(
+                                          "Do you want to remove this HabitCoin from the jar?"),
+                                    );
+                                  },
+                                );
+                              }
                             },
                             child: new Container(
                               margin: EdgeInsets.all(3),
@@ -288,9 +346,11 @@ class _CoinRowState extends State<CoinRow> {
             .widget
             .coins
             .map((coin) => LongPressDraggable(
+                  hapticFeedbackOnStart: true,
+                  maxSimultaneousDrags: isToday ? 1 : 0,
                   onDragCompleted: () {
                     setState(() {
-                      this.widget.coins.remove(coin);
+                      //this.widget.coins.remove(coin);
                     });
                   },
                   data: coin,
@@ -301,7 +361,9 @@ class _CoinRowState extends State<CoinRow> {
                     width: 110.0,
                     height: 110.0,
                     decoration: new BoxDecoration(
-                      color: Colors.white,
+                      color: isToday
+                          ? Colors.white
+                          : Colors.black.withOpacity(0.01),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: Colors.black,

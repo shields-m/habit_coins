@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:habit_coins/addCoin.dart';
 import 'package:habit_coins/globals.dart' as globals;
 
+import 'localData.dart';
+
 class MySchedule extends StatefulWidget {
   @override
   _MyScheduleState createState() => _MyScheduleState();
@@ -116,6 +118,44 @@ class _MyScheduleState extends State<MySchedule> {
               children: allCoins,
             ),
             //Padding(padding: EdgeInsets.symmetric(vertical: 10),),
+    //         flatbutton(child: text('hello'),
+    //         onpressed: (){
+    //            loadschedule().then((s) {
+    //   setstate(() {
+    //     globals.mainschedule = s;
+    //     showdialog(
+    //                             context: context,
+    //                             builder: (buildcontext context) {
+    //                               // return object of type dialog
+    //                               return alertdialog(
+    //                                 title: text("?"),
+    //                                 actions: <widget>[
+    //                                   flatbutton(
+    //                                     child: text("no"),
+    //                                     onpressed: () {
+    //                                       navigator.pop(context);
+    //                                     },
+    //                                   ),
+    //                                   flatbutton(
+    //                                     child: text("yes"),
+    //                                     onpressed: () {
+                                          
+
+                                          
+    //                                     },
+    //                                   )
+    //                                 ],
+    //                                 content: text(
+    //                                     globals.mainschedule.prt()
+    //                                     ),);
+    //                             },
+    //                           );
+    //   });
+    // });
+                
+
+
+    //         },)
           ],
         ),
       ),
@@ -130,7 +170,16 @@ class _MyScheduleState extends State<MySchedule> {
     );
     if (newCoin != null) {
       setState(() {
+        DateTime today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
+        String formattedDate = DateFormat("yMd").format(today);
         globals.mainSchedule.AddItem(newCoin);
+        if(newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))){
+        globals
+                .days.days[formattedDate].pendingCoins.add(newCoin.HabitCoin);
+        }
+
+        globals.mainSchedule.saveLocally();
+        globals.days.saveLocally();
       });
     }
   }
@@ -143,15 +192,30 @@ class _MyScheduleState extends State<MySchedule> {
     );
     if (newCoin != null) {
       setState(() {
+        DateTime today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
+        String formattedDate = DateFormat("yMd").format(today);
         if (newCoin.Delete) {
           globals.mainSchedule.RemoveItem(s);
+          globals
+                .days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
+          
         } else {
+          globals
+                .days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
           s.DaysOfWeek = newCoin.DaysOfWeek;
           s.HabitCoin = newCoin.HabitCoin;
+if(newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))){
+          globals
+                .days.days[formattedDate].pendingCoins.add(newCoin.HabitCoin);
+}
+
         }
 
         //globals.mainSchedule.AddItem(newCoin);
       });
+
+      globals.mainSchedule.saveLocally();
+      globals.days.saveLocally();
     }
     
   }

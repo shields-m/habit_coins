@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "128641382674",
+    "firebase_url": "https://habitcoins-47ad9.firebaseio.com",
+    "project_id": "habitcoins-47ad9",
+    "storage_bucket": "habitcoins-47ad9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128641382674:android:812ca8871e26363c2e9bcb",
+        "android_client_info": {
+          "package_name": "com.unlesscoaching.habit_coins"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "128641382674-u1ju1gvnktfi19q7feoi6gggeq1noeqo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.unlesscoaching.habit_coins",
+            "certificate_hash": "866b4c6dd366c2283c7c2d802a7d98a3b0d73414"
+          }
+        },
+        {
+          "client_id": "128641382674-vsn0mk414da50e26tfern5knjud5jd8n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdofhIJpKfoLM_ng-R0zimck2uMIL4lws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "128641382674-vsn0mk414da50e26tfern5knjud5jd8n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
