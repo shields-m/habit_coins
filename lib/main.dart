@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:habit_coins/myCoins.dart';
 import 'package:habit_coins/me.dart';
+import 'package:habit_coins/splash.dart';
 import 'package:habit_coins/team.dart';
+import 'package:habit_coins/stats.dart';
 import 'package:habit_coins/globals.dart' as globals;
 
 import 'localData.dart';
+import 'onboarding.dart';
 
 
 
@@ -66,9 +69,13 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: MyHomePage(title: 'HabitCoins'),
+      home:  Splash(),
+      //home: MyHomePage(title: 'HabitCoins'),
     );
   }
+
+
+
 }
 
 //Color.fromARGB(255,58, 83, 165),
@@ -102,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> _children = [
     new Me(),
     new MyCoins(),
-    new Container(color: Colors.green),
+    new Stats(),
     new Team(),
   ];
 

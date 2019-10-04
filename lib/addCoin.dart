@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:habit_coins/icons.dart';
 
-
-
 class AddCoin extends StatefulWidget {
   AddCoin() {
     selectedIcon = Icons.schedule;
@@ -124,6 +122,7 @@ class _AddCoinState extends State<AddCoin> {
                     ),
                   ),
                   TextField(
+                    textCapitalization: TextCapitalization.words,
                     controller: this.widget.txtNewCoinController,
                   )
                 ],
@@ -324,8 +323,9 @@ class _AddCoinState extends State<AddCoin> {
                     onPressed: () => {
                       sitem = new ScheduleItem(),
                       sitem.HabitCoin = new Coin(
-                          this.widget.txtNewCoinController.text, this.widget.selectedIcon),
-                      sitem.DaysOfWeek = getSortedWeekDays(this.widget.Days) ,
+                          this.widget.txtNewCoinController.text,
+                          this.widget.selectedIcon),
+                      sitem.DaysOfWeek = getSortedWeekDays(this.widget.Days),
                       sitem.FirstDate = DateTime.now(),
                       sitem.LastDate = DateTime(9999),
                       Navigator.pop(context, sitem)
@@ -337,10 +337,6 @@ class _AddCoinState extends State<AddCoin> {
                           textBaseline: TextBaseline.alphabetic),
                     ),
                   ),
-                  
-                  
-                    
-                  
                 ],
               ),
             ),
@@ -351,67 +347,57 @@ class _AddCoinState extends State<AddCoin> {
     );
   }
 
-  Widget deleteIfExisting()
-  {
-    if (this.widget.existing)
-    {
+  Widget deleteIfExisting() {
+    if (this.widget.existing) {
       ScheduleItem sitem;
-    return FlatButton(
-                      
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    onPressed: () => {
-showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  // return object of type Dialog
-                                  return AlertDialog(
-                                    title: Text("Delete HabitCoin?"),
-                                    actions: <Widget>[
-                                      FlatButton(
-                                        child: Text("No"),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      FlatButton(
-                                        child: Text("Yes"),
-                                        onPressed: () {
-                                          sitem = new ScheduleItem();
+      return FlatButton(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        onPressed: () => {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              // return object of type Dialog
+              return AlertDialog(
+                title: Text("Delete HabitCoin?"),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("No"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("Yes"),
+                    onPressed: () {
+                      sitem = new ScheduleItem();
                       sitem.HabitCoin = new Coin(
-                          this.widget.txtNewCoinController.text, this.widget.selectedIcon);
+                          this.widget.txtNewCoinController.text,
+                          this.widget.selectedIcon);
                       sitem.DaysOfWeek = this.widget.Days;
                       sitem.FirstDate = DateTime.now();
                       sitem.LastDate = DateTime(9999);
                       sitem.Delete = true;
                       Navigator.pop(context);
                       Navigator.pop(context, sitem);
-
-                                          
-                                        },
-                                      )
-                                    ],
-                                    content: Text(
-                                        "Do you want to delete this HabitCoin?"),
-                                  );
-                                },
-                              )
-
-
-
-
-                      
                     },
-                    child: Text(
-                      'Delete HabitCoin',
-                      style: TextStyle(
-                          fontSize: 14.0,
-                          color: Colors.red,
-                          textBaseline: TextBaseline.alphabetic),
-                    ),
-                  );
+                  )
+                ],
+                content: Text("Do you want to delete this HabitCoin?"),
+              );
+            },
+          )
+        },
+        child: Text(
+          'Delete HabitCoin',
+          style: TextStyle(
+              fontSize: 14.0,
+              color: Colors.red,
+              textBaseline: TextBaseline.alphabetic),
+        ),
+      );
+    } else {
+      return Container();
     }
-                  else
-                  {return Container();}
   }
 
   showPickerIcons(BuildContext context, PickerDataAdapter data) {
@@ -432,41 +418,31 @@ showDialog(
         }).showDialog(context);
   }
 
-  List<String> getSortedWeekDays(List<String> days)
-  {
-List<String> newList = new List();
+  List<String> getSortedWeekDays(List<String> days) {
+    List<String> newList = new List();
 
-  if(days.contains('Monday'))
-  {
-    newList.add('Monday');
-  }
-  if(days.contains('Tuesday'))
-  {
-    newList.add('Tuesday');
-  }
-  if(days.contains('Wednesday'))
-  {
-    newList.add('Wednesday');
-  }
-  if(days.contains('Thursday'))
-  {
-    newList.add('Thursday');
-  }
-  if(days.contains('Friday'))
-  {
-    newList.add('Friday');
-  }
-  if(days.contains('Saturday'))
-  {
-    newList.add('Saturday');
-  }
-  if(days.contains('Sunday'))
-  {
-    newList.add('Sunday');
-  }
+    if (days.contains('Monday')) {
+      newList.add('Monday');
+    }
+    if (days.contains('Tuesday')) {
+      newList.add('Tuesday');
+    }
+    if (days.contains('Wednesday')) {
+      newList.add('Wednesday');
+    }
+    if (days.contains('Thursday')) {
+      newList.add('Thursday');
+    }
+    if (days.contains('Friday')) {
+      newList.add('Friday');
+    }
+    if (days.contains('Saturday')) {
+      newList.add('Saturday');
+    }
+    if (days.contains('Sunday')) {
+      newList.add('Sunday');
+    }
 
-  return newList;
-
-
+    return newList;
   }
 }

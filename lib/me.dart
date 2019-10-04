@@ -7,15 +7,27 @@ import 'package:habit_coins/auth/authentication.dart';
 import 'package:habit_coins/globals.dart' as globals;
 
 import 'auth/authentication.dart';
+import 'localData.dart';
 
 class Me extends StatefulWidget {
   BaseAuth auth = new Auth();
-
+  String Name = 'Loading...';
   @override
   _MeState createState() => _MeState();
 }
 
 class _MeState extends State<Me> {
+  @override
+  void initState() {
+    loadName().then((name) => {
+          setState(() {
+            this.widget.Name = name;
+          })
+        });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -47,7 +59,6 @@ class _MeState extends State<Me> {
               ),
             ),
           ),
-
           Container(
             decoration: BoxDecoration(
               border: Border(
@@ -59,11 +70,14 @@ class _MeState extends State<Me> {
               //borderRadius: BorderRadius.circular(16.0),
             ),
             child: ListTile(
+              onTap: () {
+                editName();
+              },
               title: Text('My Name',
                   style: TextStyle(
                     fontSize: 20,
                   )),
-              subtitle: Text('Mark Shields'),
+              subtitle: Text(this.widget.Name),
               trailing: Icon(Icons.person),
             ),
           ),
@@ -92,82 +106,116 @@ class _MeState extends State<Me> {
             ),
           ),
           cloudOptions(),
-          
         ],
       ),
     );
   }
 
   Widget cloudOptions() {
-
-return new StreamBuilder<FirebaseUser>(
+    return new StreamBuilder<FirebaseUser>(
         stream: FirebaseAuth.instance.onAuthStateChanged,
         builder: (BuildContext context, snapshot) {
           if (snapshot.hasData) {
-            
-    
-      return Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Color.fromARGB(128, 53, 83, 165),
-              width: 1,
-            ),
-          ),
-          //borderRadius: BorderRadius.circular(16.0),
-        ),
-        child: ListTile(
-          onTap: () {
-            setState(() {
-              this.widget.auth.signOut();
-              
-            });
-            
-          },
-          title: Text(
-            'Cloud Sync',
-            style: TextStyle(
-              fontSize: 20,
-            ),
-          ),
-          subtitle: Text('Sign out of cloud sync'),
-          trailing: Icon(Icons.cloud_off),
-        ),
-      );
+            return Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Color.fromARGB(128, 53, 83, 165),
+                    width: 1,
+                  ),
+                ),
+                //borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: ListTile(
+                onTap: () {
+                  signOut();
+                },
+                title: Text(
+                  'Cloud Sync',
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                subtitle: Text('Sign out of cloud sync'),
+                trailing: Icon(Icons.cloud_off),
+              ),
+            );
           }
           return Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Color.fromARGB(128, 53, 83, 165),
-              width: 1,
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Color.fromARGB(128, 53, 83, 165),
+                  width: 1,
+                ),
+              ),
+              //borderRadius: BorderRadius.circular(16.0),
             ),
-          ),
-          //borderRadius: BorderRadius.circular(16.0),
-        ),
-        child: ListTile(
-          onTap: () {
-            openCloudPage();
-          },
-          title: Text(
-            'Cloud Sync',
-            style: TextStyle(
-              fontSize: 20,
+            child: ListTile(
+              onTap: () {
+                openCloudPage();
+              },
+              title: Text(
+                'Cloud Sync',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              subtitle: Text('Log in to sync your HabitCoins to the cloud'),
+              trailing: Icon(Icons.cloud_queue),
             ),
-          ),
-          subtitle: Text('Log in to sync your HabitCoins to the cloud'),
-          trailing: Icon(Icons.cloud_queue),
-        ),
-      );
+          );
         });
   }
 
+  void editName() {
+    TextEditingController txtName = new TextEditingController();
+    txtName.text = this.widget.Name;
 
+    var focusNode = new FocusNode();
+    var nameTextField = new TextField(
+      textCapitalization: TextCapitalization.words,
+      focusNode: focusNode,
+      controller: txtName,
+    );
 
-    
-      
-    
-  
+    FocusScope.of(context).requestFocus(focusNode);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: Text("Enter your name"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            FlatButton(
+              child: Text("Save"),
+              onPressed: () {
+                saveName(txtName.text).then((s) => {
+                      setState(() {
+                        this.widget.Name = txtName.text;
+                      })
+                    });
+                    Navigator.pop(context);
+              },
+            )
+          ],
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              nameTextField,
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void openScheduleScreen() async {
     final MySchedule page = new MySchedule();
@@ -183,8 +231,45 @@ return new StreamBuilder<FirebaseUser>(
       context,
       MaterialPageRoute(builder: (context) => page),
     );
-    if (loggedin) {
+    if (loggedin != null && loggedin) {
       setState(() {});
     }
+  }
+
+  void signOut()
+  {
+   showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: Text("Sign Out?"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("No"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            FlatButton(
+              child: Text("Yes"),
+              onPressed: () {
+                setState(() {
+                    this.widget.auth.signOut();
+                  });
+                    Navigator.pop(context);
+              },
+            )
+          ],
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text('Are you seure you want to sign out of cloud sync?')
+            ],
+          ),
+        );
+      },
+    );
+
   }
 }

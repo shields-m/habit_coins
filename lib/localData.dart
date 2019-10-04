@@ -20,6 +20,55 @@ Future<File> saveSchedule(Schedule s) async {
   return file.writeAsString(json.encode(s.toJson()));
 }
 
+Future<File> saveName(String name) async {
+  final path = await _localPath;
+  File file = File('$path/name.json');
+
+  return file.writeAsString(name);
+}
+
+
+Future<File> saveOnboardingComplete() async {
+  final path = await _localPath;
+  File file = File('$path/onboard.json');
+
+  return file.writeAsString(true.toString());
+}
+
+Future<bool> loadOnboardStatus() async {
+  // try {
+  final path = await _localPath;
+
+  File file = File('$path/onboard.json');
+  if (file.existsSync()) {
+    String contents = await file.readAsString();
+//print(contents);
+  
+    return contents == 'true';
+  } else {
+    
+    return false;
+  }
+
+}
+
+
+Future<String> loadName() async {
+  // try {
+  final path = await _localPath;
+
+  File file = File('$path/name.json');
+  if (file.existsSync()) {
+    String contents = await file.readAsString();
+//print(contents);
+  
+    return contents;
+  } else {
+    
+    return '';
+  }
+
+}
 
 Future<File> saveDays(DayList d) async {
   final path = await _localPath;

@@ -22,7 +22,7 @@ class MyCoins extends StatefulWidget {
     isToday = true;
     isPast = false;
   }
-  Jar jar = new Jar();
+  Jar jar = new Jar.fromDay(globals.days.days[DateFormat("yMd").format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))]);
 
   _MyCoinsState createState() => _MyCoinsState();
 }
@@ -38,8 +38,10 @@ class _MyCoinsState extends State<MyCoins> {
       if (isFuture) {
         coins = globals.mainSchedule.getCoinsForDay(selectedDate);
       } else {
+                    
         coins = globals
             .days.days[DateFormat("yMd").format(selectedDate)].pendingCoins;
+            
       }
       return Column(
         children: <Widget>[
@@ -100,7 +102,7 @@ class _MyCoinsState extends State<MyCoins> {
             } else {
               today = globals.days.days[DateFormat("yMd").format(selectedDate)];
             }
-            this.widget.jar = new Jar.withCoins(today.coinsInJar);
+            this.widget.jar = new Jar.fromDay(today);
             globals.mainSchedule = s;
             
             //print(json.encode(globals.days));
@@ -139,8 +141,8 @@ class _MyCoinsState extends State<MyCoins> {
           today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
           globals.days.days[DateFormat("yMd").format(newDate)] = today;
         }
-        this.widget.jar = new Jar.withCoins(
-            globals.days.days[DateFormat("yMd").format(newDate)].coinsInJar);
+        this.widget.jar = new Jar.fromDay(
+            globals.days.days[DateFormat("yMd").format(newDate)]);
       } else if (newDate.isAfter(now)) {
         isToday = false;
         isFuture = true;
@@ -159,14 +161,66 @@ class _MyCoinsState extends State<MyCoins> {
 
           globals.days.days[DateFormat("yMd").format(newDate)] = today;
         }
-        this.widget.jar = new Jar.withCoins(
-            globals.days.days[DateFormat("yMd").format(newDate)].coinsInJar);
+        this.widget.jar = new Jar.fromDay(
+            globals.days.days[DateFormat("yMd").format(newDate)]);
       }
 
       //print(json.encode(globals.days));
     });
   }
 }
+
+
+class ScaleAnimation extends StatefulWidget {
+  @override
+  _ScaleAnimationState createState() => _ScaleAnimationState();
+}
+
+class _ScaleAnimationState extends State<ScaleAnimation>
+    with SingleTickerProviderStateMixin {
+  AnimationController animationController;
+  Animation<double> animation;
+
+  @override
+  void initState() {
+    super.initState();
+    animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 350),
+    )..addListener(() => setState(() {}));
+    animation = CurvedAnimation(
+      parent: animationController,
+      curve: Curves.easeInOut,
+    );
+
+    animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    
+     return ScaleTransition(
+          scale: animation,
+          child: Container(
+            
+            child: Image.asset(
+              'assets/images/thumbsup.png',
+              fit: BoxFit.fitWidth,
+              
+            ),
+          ),
+        );
+  }
+}
+
+
 
 class JarWidget extends StatefulWidget {
   Jar _jar;
@@ -180,6 +234,14 @@ class JarWidget extends StatefulWidget {
 }
 
 class _JarWidgetState extends State<JarWidget> {
+
+  AnimationController animationController;
+  Animation<double> animation;
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return DragTarget(
@@ -204,6 +266,14 @@ class _JarWidgetState extends State<JarWidget> {
         return Stack(
           fit: StackFit.expand,
           children: <Widget>[
+            Container(
+              child: this.widget._jar.day.complete() ?  
+             
+              Container(padding: EdgeInsets.symmetric(vertical: 10, horizontal: 90),child: ScaleAnimation(),) 
+            
+            
+            : Container(),
+            ),
             new SvgPicture.asset('assets/images/jar.svg',
                 semanticsLabel: 'Jar'),
             Container(
@@ -382,9 +452,9 @@ class _CoinRowState extends State<CoinRow> {
                       child: Icon(
                         coin.Icon,
                         size: 44,
-                      ),
+                      ),),
                     ),
-                  ),
+                  
                   feedback: Container(
                     margin: EdgeInsets.all(6),
                     width: 120.0,
@@ -440,7 +510,7 @@ class _CoinRowState extends State<CoinRow> {
                       ),
                     ),
                   ),
-                ))
+                ),)
             .toList(),
       ),
     );

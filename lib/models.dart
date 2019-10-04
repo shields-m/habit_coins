@@ -43,15 +43,24 @@ class Jar {
 
   int coinsInJar;
 
+  Day day;
+
   List<Coin> coins;
 
   Jar() {
     coins = new List<Coin>();
+    day = new Day();
   }
 
   Jar.withCoins(List<Coin> coinlist)
   {
     coins = coinlist;
+  }
+
+  Jar.fromDay(Day d)
+  {
+    day = d;
+    coins = d.coinsInJar;
   }
 }
 
@@ -63,6 +72,8 @@ class Day {
     pendingCoins = new List();
     coinsInJar = new List();
   }
+
+  bool complete() => totalCoinCount() > 0 && pendingCoins.length == 0;
 
   Map<String, dynamic> toJson() => {
         'pendingCoins': pendingCoins.map((item) => item.toJson()).toList(),

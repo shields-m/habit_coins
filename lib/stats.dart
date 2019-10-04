@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class Team extends StatefulWidget {
+class Stats extends StatefulWidget {
   @override
-  _TeamState createState() => _TeamState();
+  _StatsState createState() => _StatsState();
 }
 
-class _TeamState extends State<Team> {
+class _StatsState extends State<Stats> {
   @override
   Widget build(BuildContext context) {
     return
@@ -35,7 +35,7 @@ class _TeamState extends State<Team> {
                 padding: EdgeInsets.symmetric(vertical: 50),
                 child: Center(
                   child: Text(
-                    'My Team',
+                    'Statistics',
                     style: TextStyle(fontSize: 36, fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -53,7 +53,7 @@ class _TeamState extends State<Team> {
                 ),
                 child: ListTile(
                   title: Text('Coming Soon...', style: TextStyle(fontSize: 20,)),
-                  subtitle: Text('Share your progress with your team!'),
+                  subtitle: Text('See your history and statistics!'),
                   trailing: Icon(Icons.av_timer),
                 ),
               ),
