@@ -22,7 +22,7 @@ class MyCoins extends StatefulWidget {
     isToday = true;
     isPast = false;
   }
-  Jar jar = new Jar.fromDay(globals.days.days[DateFormat("yMd").format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))]);
+  Jar jar = new Jar.fromDay(globals.days.days[globals.getDayKey(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))]);
 
   _MyCoinsState createState() => _MyCoinsState();
 }
@@ -40,7 +40,7 @@ class _MyCoinsState extends State<MyCoins> {
       } else {
                     
         coins = globals
-            .days.days[DateFormat("yMd").format(selectedDate)].pendingCoins;
+            .days.days[globals.getDayKey(selectedDate)].pendingCoins;
             
       }
       return Column(
@@ -98,9 +98,9 @@ class _MyCoinsState extends State<MyCoins> {
               today.coinsInJar = new List<Coin>();
 
               today.pendingCoins = s.getCoinsForDay(selectedDate);
-              globals.days.days[DateFormat("yMd").format(selectedDate)] = today;
+              globals.days.days[globals.getDayKey(selectedDate)] = today;
             } else {
-              today = globals.days.days[DateFormat("yMd").format(selectedDate)];
+              today = globals.days.days[globals.getDayKey(selectedDate)];
             }
             this.widget.jar = new Jar.fromDay(today);
             globals.mainSchedule = s;
@@ -139,10 +139,10 @@ class _MyCoinsState extends State<MyCoins> {
           today.coinsInJar = new List<Coin>();
 
           today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
-          globals.days.days[DateFormat("yMd").format(newDate)] = today;
+          globals.days.days[globals.getDayKey(newDate)] = today;
         }
         this.widget.jar = new Jar.fromDay(
-            globals.days.days[DateFormat("yMd").format(newDate)]);
+            globals.days.days[globals.getDayKey(newDate)]);
       } else if (newDate.isAfter(now)) {
         isToday = false;
         isFuture = true;
@@ -153,16 +153,16 @@ class _MyCoinsState extends State<MyCoins> {
         isFuture = false;
         isPast = true;
 
-        if (!globals.days.days.containsKey(DateFormat("yMd").format(newDate))) {
+        if (!globals.days.days.containsKey(globals.getDayKey(newDate))) {
           Day today = new Day();
           today.coinsInJar = new List<Coin>();
 
           today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
 
-          globals.days.days[DateFormat("yMd").format(newDate)] = today;
+          globals.days.days[globals.getDayKey(newDate)] = today;
         }
         this.widget.jar = new Jar.fromDay(
-            globals.days.days[DateFormat("yMd").format(newDate)]);
+            globals.days.days[globals.getDayKey(newDate)]);
       }
 
       //print(json.encode(globals.days));
@@ -252,10 +252,10 @@ class _JarWidgetState extends State<JarWidget> {
         if (!this.widget._jar.coins.contains(data)) {
           setState(() {
             // this.widget._jar.coins.add(data);
-            globals.days.days[DateFormat("yMd").format(selectedDate)].coinsInJar
+            globals.days.days[globals.getDayKey(selectedDate)].coinsInJar
                 .add(data);
             globals
-                .days.days[DateFormat("yMd").format(selectedDate)].pendingCoins
+                .days.days[globals.getDayKey(selectedDate)].pendingCoins
                 .remove(data);
 
             globals.days.saveLocally();

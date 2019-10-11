@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 
 import 'localData.dart';
 import 'models.dart';
+import 'package:habit_coins/auth/authentication.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
 
 class Splash extends StatefulWidget {
   @override
@@ -25,7 +27,24 @@ class _SplashState extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
+     DataConnectionChecker().hasConnection.then(
+       (status)
+       {
+         print('Connected: ' + status.toString());
+       }
+     );
+Auth auth = new Auth();
+     auth.getCurrentUser().then(
+       (u){
+         if(u != null) globals.CurrentUser = u.uid;
+         
+       }
+     );
+     ;
     loadOnboardStatus().then((x) {
+      Future.delayed(Duration(seconds: 2)).then((n){
+
+
       
       //doIKnowIfOnboardingIsComplete = true;
       onboardingComplete = x;
@@ -49,7 +68,7 @@ class _SplashState extends State<Splash> {
               today.coinsInJar = new List<Coin>();
 
               today.pendingCoins = globals.mainSchedule.getCoinsForDay(selectedDate);
-              globals.days.days[DateFormat("yMd").format(selectedDate)] = today;
+              globals.days.days[globals.getDayKey(selectedDate)] = today;
               
             } 
 
@@ -68,6 +87,7 @@ class _SplashState extends State<Splash> {
         print('onboarding not complete');
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OnboardingPage()));
       }
+    });
     });
 
     return Scaffold(

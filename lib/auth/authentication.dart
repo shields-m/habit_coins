@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:habit_coins/globals.dart' as globals;
 
 abstract class BaseAuth {
   Future<String> signIn(String email, String password);
@@ -18,16 +19,26 @@ abstract class BaseAuth {
 class Auth implements BaseAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+
+
+
   Future<String> signIn(String email, String password) async {
-    FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(
+
+
+
+
+
+    var user = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password);
-    return user.uid;
+        globals.UseCloudSync = true;
+        globals.CurrentUser = user.user.uid;
+    return user.user.uid;
   }
 
   Future<String> signUp(String email, String password) async {
-    FirebaseUser user = await _firebaseAuth.createUserWithEmailAndPassword(
+    var user = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
-    return user.uid;
+    return user.user.uid;
   }
 
   Future<FirebaseUser> getCurrentUser() async {
@@ -36,6 +47,8 @@ class Auth implements BaseAuth {
   }
 
   Future<void> signOut() async {
+    globals.UseCloudSync = false;
+    globals.CurrentUser = '';
     return _firebaseAuth.signOut();
   }
 

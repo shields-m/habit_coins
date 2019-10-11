@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:habit_coins/iconPicker.dart';
 import 'package:habit_coins/models.dart';
 import 'package:habit_coins/schedule.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
+
 import 'package:habit_coins/icons.dart';
 
 class AddCoin extends StatefulWidget {
@@ -10,10 +11,7 @@ class AddCoin extends StatefulWidget {
     selectedIcon = Icons.schedule;
     Days = new List();
 
-    List<PickerItem> p = new List();
-    allIcons.forEach((icon) => {p.add(_buildPickerDataItem(icon))});
-
-    icons = PickerDataAdapter(data: p);
+   
   }
 
   final txtNewCoinController = TextEditingController();
@@ -21,10 +19,7 @@ class AddCoin extends StatefulWidget {
 
   AddCoin.fromExisting(ScheduleItem s) {
     existing = true;
-    List<PickerItem> p = new List();
-    allIcons.forEach((icon) => {p.add(_buildPickerDataItem(icon))});
-
-    icons = PickerDataAdapter(data: p);
+    
 
     selectedIcon = s.HabitCoin.Icon;
     txtNewCoinController.text = s.HabitCoin.Name;
@@ -32,13 +27,8 @@ class AddCoin extends StatefulWidget {
     Days = s.DaysOfWeek;
   }
 
-  PickerItem _buildPickerDataItem(int icon) {
-    return new PickerItem(
-        text: Icon(IconData(icon, fontFamily: 'MaterialIcons')),
-        value: IconData(icon, fontFamily: 'MaterialIcons'));
-  }
+  
 
-  PickerDataAdapter icons;
   IconData selectedIcon;
 
   List<String> Days;
@@ -148,7 +138,15 @@ class _AddCoinState extends State<AddCoin> {
                 ),
                 onTap: () {
                   FocusScope.of(context).requestFocus(new FocusNode());
-                  showPickerIcons(context, this.widget.icons);
+                  //showPickerIcons(context, this.widget.icons);
+                  selectIcon(context).then((newIcon) {
+                    if (newIcon != null) {
+                      setState(() {
+                        print(newIcon);
+                        this.widget.selectedIcon = newIcon;
+                      });
+                    }
+                  });
                 },
                 trailing: Icon(
                   this.widget.selectedIcon,
@@ -400,23 +398,6 @@ class _AddCoinState extends State<AddCoin> {
     }
   }
 
-  showPickerIcons(BuildContext context, PickerDataAdapter data) {
-    //sleep(Duration(milliseconds: 100));
-    new Picker(
-        hideHeader: true,
-        looping: true,
-        itemExtent: 40,
-        height: 100,
-        adapter: data,
-        title: new Text("Select Icon"),
-        onConfirm: (Picker picker, List value) {
-          //print(value.toString());
-          //print(picker.getSelectedValues());
-          setState(() {
-            this.widget.selectedIcon = picker.getSelectedValues()[0];
-          });
-        }).showDialog(context);
-  }
 
   List<String> getSortedWeekDays(List<String> days) {
     List<String> newList = new List();

@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:habit_coins/myCoins.dart';
 import 'package:habit_coins/me.dart';
 import 'package:habit_coins/splash.dart';
 import 'package:habit_coins/team.dart';
 import 'package:habit_coins/stats.dart';
-import 'package:habit_coins/globals.dart' as globals;
 
-import 'localData.dart';
-import 'onboarding.dart';
 
 
 
@@ -35,7 +31,7 @@ class MyApp extends StatelessWidget {
    
 
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Unless HabitCoins',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -164,8 +160,8 @@ type: BottomNavigationBarType.fixed,
             title: Text('HabitCoins'),
           ),
           new BottomNavigationBarItem(
-            icon: Icon(Icons.insert_chart),
-            title: Text('Stats'),
+            icon: Icon(Icons.calendar_today),
+            title: Text('History'),
           ),
           new BottomNavigationBarItem(
               icon: Icon(Icons.people_outline),

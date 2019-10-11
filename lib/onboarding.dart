@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/Picker.dart';
 import 'package:habit_coins/localData.dart';
 import 'package:habit_coins/main.dart';
 import 'package:habit_coins/schedule.dart';
@@ -8,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import 'auth/authentication.dart';
 import 'auth/signupsignin.dart';
+import 'iconPicker.dart';
 import 'icons.dart';
 import 'models.dart';
 
@@ -443,7 +443,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
                   today.pendingCoins =
                       globals.mainSchedule.getCoinsForDay(selectedDate);
-                  globals.days.days[DateFormat("yMd").format(selectedDate)] =
+                  globals.days.days[globals.getDayKey(selectedDate)] =
                       today;
                   Navigator.pushAndRemoveUntil(
                       context,
@@ -505,40 +505,17 @@ class FirstCoinBuilder extends StatefulWidget {
 }
 
 class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
-  PickerDataAdapter icons;
+ 
   @override
   initState() {
-    List<PickerItem> p = new List();
-    allIcons.forEach((icon) => {p.add(_buildPickerDataItem(icon))});
-
-    icons = PickerDataAdapter(data: p);
+    
 
     super.initState();
   }
 
-  PickerItem _buildPickerDataItem(int icon) {
-    return new PickerItem(
-        text: Icon(IconData(icon, fontFamily: 'MaterialIcons')),
-        value: IconData(icon, fontFamily: 'MaterialIcons'));
-  }
+ 
 
-  showPickerIcons(BuildContext context, PickerDataAdapter data) {
-    //sleep(Duration(milliseconds: 100));
-    new Picker(
-        hideHeader: true,
-        looping: true,
-        itemExtent: 40,
-        height: 100,
-        adapter: data,
-        title: new Text("Select Icon"),
-        onConfirm: (Picker picker, List value) {
-          //print(value.toString());
 
-          setState(() {
-            coin.Icon = picker.getSelectedValues()[0];
-          });
-        }).showDialog(context);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -618,7 +595,14 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
             ),
             onPressed: () {
               FocusScope.of(context).requestFocus(new FocusNode());
-              showPickerIcons(context, icons);
+              selectIcon(context).then((newIcon) {
+                    if (newIcon != null) {
+                      setState(() {
+                        print(newIcon);
+                        coin.Icon = newIcon;
+                      });
+                    }
+                  });
             },
           ),
         ],

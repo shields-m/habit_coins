@@ -171,7 +171,7 @@ class _MyScheduleState extends State<MySchedule> {
     if (newCoin != null) {
       setState(() {
         DateTime today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
-        String formattedDate = DateFormat("yMd").format(today);
+        String formattedDate = globals.getDayKey(today);
         globals.mainSchedule.AddItem(newCoin);
         if(newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))){
         globals
@@ -193,7 +193,7 @@ class _MyScheduleState extends State<MySchedule> {
     if (newCoin != null) {
       setState(() {
         DateTime today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
-        String formattedDate = DateFormat("yMd").format(today);
+        String formattedDate = globals.getDayKey(today);
         if (newCoin.Delete) {
           globals.mainSchedule.RemoveItem(s);
           globals

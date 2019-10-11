@@ -1,11 +1,11 @@
 import 'dart:convert'; //to convert json to maps and vice versa
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:habit_coins/models.dart';
 import 'package:habit_coins/schedule.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:habit_coins/globals.dart' as globals;
+import 'package:data_connection_checker/data_connection_checker.dart';
 
 Future<String> get _localPath async {
   final directory = await getApplicationDocumentsDirectory();
@@ -16,6 +16,16 @@ Future<String> get _localPath async {
 Future<File> saveSchedule(Schedule s) async {
   final path = await _localPath;
   File file = File('$path/schedule.json');
+  if(globals.UseCloudSync && globals.CurrentUser != '')
+  {
+      bool connected = await  DataConnectionChecker().hasConnection;
+      if(connected)
+      {
+        //Save Schedule To Cloud
+      }
+  }
+  
+  
 
   return file.writeAsString(json.encode(s.toJson()));
 }
