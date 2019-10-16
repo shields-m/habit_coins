@@ -106,6 +106,8 @@ class _MeState extends State<Me> {
             ),
           ),
           cloudOptions(),
+          
+          
         ],
       ),
     );
@@ -202,7 +204,7 @@ class _MeState extends State<Me> {
                         this.widget.Name = txtName.text;
                       })
                     });
-                    Navigator.pop(context);
+                Navigator.pop(context);
               },
             )
           ],
@@ -232,13 +234,51 @@ class _MeState extends State<Me> {
       MaterialPageRoute(builder: (context) => page),
     );
     if (loggedin != null && loggedin) {
+      userExists().then((e) {
+        if (e) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              // return object of type Dialog
+              return AlertDialog(
+                title: Text("Select Data?"),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("This Device"),
+                    onPressed: () {
+                      saveScheduleToCloud();
+                      Navigator.pop(context);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("Cloud Data"),
+                    onPressed: () {
+                      loadScheduleFromCloud();
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text('You already have cloud data synced, would you like to keep the data from this device or the data in the cloud? This choice cannot be undone.')
+                  ],
+                ),
+              );
+            },
+          );
+        }
+        else{
+          saveScheduleToCloud();
+        }
+      });
+
       setState(() {});
     }
   }
 
-  void signOut()
-  {
-   showDialog(
+  void signOut() {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
@@ -255,9 +295,9 @@ class _MeState extends State<Me> {
               child: Text("Yes"),
               onPressed: () {
                 setState(() {
-                    this.widget.auth.signOut();
-                  });
-                    Navigator.pop(context);
+                  this.widget.auth.signOut();
+                });
+                Navigator.pop(context);
               },
             )
           ],
@@ -270,6 +310,5 @@ class _MeState extends State<Me> {
         );
       },
     );
-
   }
 }

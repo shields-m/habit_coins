@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'localData.dart';
 import 'models.dart';
 import 'package:habit_coins/auth/authentication.dart';
-import 'package:data_connection_checker/data_connection_checker.dart';
+
 
 class Splash extends StatefulWidget {
   @override
@@ -27,67 +27,65 @@ class _SplashState extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
-     DataConnectionChecker().hasConnection.then(
-       (status)
-       {
-         print('Connected: ' + status.toString());
-       }
-     );
-Auth auth = new Auth();
-     auth.getCurrentUser().then(
-       (u){
-         if(u != null) globals.CurrentUser = u.uid;
-         
-       }
-     );
-     ;
+    
+    Auth auth = new Auth();
+
     loadOnboardStatus().then((x) {
-      Future.delayed(Duration(seconds: 2)).then((n){
+      Future.delayed(Duration(seconds: 2)).then((n) {
+        //doIKnowIfOnboardingIsComplete = true;
+        onboardingComplete = x;
+        if (onboardingComplete) {
+          //print('onboarding complete');
 
-
-      
-      //doIKnowIfOnboardingIsComplete = true;
-      onboardingComplete = x;
-      if (onboardingComplete) {
-        //print('onboarding complete');
-        loadSchedule().then((s) {
-          
-          globals.mainSchedule = s;
-          globals.ScheduleLoaded = true;
-          loadDays().then((d) {
-            globals.days = d;
-            globals.DaysLoaded = true;
-          DateTime selectedDate =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-            if (!globals.days.days
-                .containsKey(DateFormat("yMd").format(selectedDate))) {
-
-                  Day today = new Day();
-
-
-              today.coinsInJar = new List<Coin>();
-
-              today.pendingCoins = globals.mainSchedule.getCoinsForDay(selectedDate);
-              globals.days.days[globals.getDayKey(selectedDate)] = today;
-              
-            } 
-
-            
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(title: 'HabitCoins',)));
-             //MyHomePage home = new MyHomePage(title: 'HabitCoins');
-            //  Navigator.pushAndRemoveUntil(
-            //      context,
-            //      MaterialPageRoute(
-            //        builder: (BuildContext context) => home,
-            //      ),
-            //      ModalRoute.withName('/'));
+          globals.UseCloudSync = false;
+          auth.getCurrentUser().then((u) {
+            if (u != null) {
+              globals.CurrentUser = u.uid;
+              globals.UseCloudSync = true;
+              loadScheduleFromCloud();
+            }
           });
-        });
-      } else {
-        print('onboarding not complete');
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OnboardingPage()));
-      }
-    });
+
+          loadSchedule().then((s) {
+            globals.mainSchedule = s;
+            globals.ScheduleLoaded = true;
+            loadDays().then((d) {
+              globals.days = d;
+              globals.DaysLoaded = true;
+              DateTime selectedDate = DateTime(DateTime.now().year,
+                  DateTime.now().month, DateTime.now().day);
+              if (!globals.days.days
+                  .containsKey(globals.getDayKey(selectedDate))) {
+                Day today = new Day();
+
+                today.coinsInJar = new List<Coin>();
+
+                today.pendingCoins =
+                    globals.mainSchedule.getCoinsForDay(selectedDate);
+                globals.days.days[globals.getDayKey(selectedDate)] = today;
+              }
+
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MyHomePage(
+                            title: 'HabitCoins',
+                          )));
+              //MyHomePage home = new MyHomePage(title: 'HabitCoins');
+              //  Navigator.pushAndRemoveUntil(
+              //      context,
+              //      MaterialPageRoute(
+              //        builder: (BuildContext context) => home,
+              //      ),
+              //      ModalRoute.withName('/'));
+            });
+          });
+        } else {
+          print('onboarding not complete');
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => OnboardingPage()));
+        }
+      });
     });
 
     return Scaffold(

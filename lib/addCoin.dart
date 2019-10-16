@@ -10,24 +10,23 @@ class AddCoin extends StatefulWidget {
   AddCoin() {
     selectedIcon = Icons.schedule;
     Days = new List();
-
-   
+    title = 'Add HabitCoin';
   }
+
+  String title;
 
   final txtNewCoinController = TextEditingController();
   bool existing = false;
-
+  String CloudID;
   AddCoin.fromExisting(ScheduleItem s) {
     existing = true;
-    
-
+    title = 'Modify HabitCoin';
+    CloudID = s.HabitCoin.CloudID;
     selectedIcon = s.HabitCoin.Icon;
     txtNewCoinController.text = s.HabitCoin.Name;
 
     Days = s.DaysOfWeek;
   }
-
-  
 
   IconData selectedIcon;
 
@@ -84,7 +83,7 @@ class _AddCoinState extends State<AddCoin> {
               padding: EdgeInsets.symmetric(vertical: 50),
               child: Center(
                 child: Text(
-                  'Add HabitCoin',
+                  this.widget.title,
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -323,6 +322,7 @@ class _AddCoinState extends State<AddCoin> {
                       sitem.HabitCoin = new Coin(
                           this.widget.txtNewCoinController.text,
                           this.widget.selectedIcon),
+                      sitem.HabitCoin.CloudID = this.widget.CloudID,
                       sitem.DaysOfWeek = getSortedWeekDays(this.widget.Days),
                       sitem.FirstDate = DateTime.now(),
                       sitem.LastDate = DateTime(9999),
@@ -397,7 +397,6 @@ class _AddCoinState extends State<AddCoin> {
       return Container();
     }
   }
-
 
   List<String> getSortedWeekDays(List<String> days) {
     List<String> newList = new List();

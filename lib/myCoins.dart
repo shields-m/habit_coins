@@ -94,7 +94,7 @@ class _MyCoinsState extends State<MyCoins> {
             Day today = new Day();
             globals.days = d;
             if (!globals.days.days
-                .containsKey(DateFormat("yMd").format(selectedDate))) {
+                .containsKey(globals.getDayKey(selectedDate))) {
               today.coinsInJar = new List<Coin>();
 
               today.pendingCoins = s.getCoinsForDay(selectedDate);
@@ -134,7 +134,7 @@ class _MyCoinsState extends State<MyCoins> {
         isToday = true;
         isFuture = false;
         isPast = false;
-        if (!globals.days.days.containsKey(DateFormat("yMd").format(newDate))) {
+        if (!globals.days.days.containsKey(globals.getDayKey(newDate))) {
           Day today = new Day();
           today.coinsInJar = new List<Coin>();
 

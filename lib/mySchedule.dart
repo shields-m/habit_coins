@@ -118,44 +118,40 @@ class _MyScheduleState extends State<MySchedule> {
               children: allCoins,
             ),
             //Padding(padding: EdgeInsets.symmetric(vertical: 10),),
-    //         flatbutton(child: text('hello'),
-    //         onpressed: (){
-    //            loadschedule().then((s) {
-    //   setstate(() {
-    //     globals.mainschedule = s;
-    //     showdialog(
-    //                             context: context,
-    //                             builder: (buildcontext context) {
-    //                               // return object of type dialog
-    //                               return alertdialog(
-    //                                 title: text("?"),
-    //                                 actions: <widget>[
-    //                                   flatbutton(
-    //                                     child: text("no"),
-    //                                     onpressed: () {
-    //                                       navigator.pop(context);
-    //                                     },
-    //                                   ),
-    //                                   flatbutton(
-    //                                     child: text("yes"),
-    //                                     onpressed: () {
-                                          
+            //         flatbutton(child: text('hello'),
+            //         onpressed: (){
+            //            loadschedule().then((s) {
+            //   setstate(() {
+            //     globals.mainschedule = s;
+            //     showdialog(
+            //                             context: context,
+            //                             builder: (buildcontext context) {
+            //                               // return object of type dialog
+            //                               return alertdialog(
+            //                                 title: text("?"),
+            //                                 actions: <widget>[
+            //                                   flatbutton(
+            //                                     child: text("no"),
+            //                                     onpressed: () {
+            //                                       navigator.pop(context);
+            //                                     },
+            //                                   ),
+            //                                   flatbutton(
+            //                                     child: text("yes"),
+            //                                     onpressed: () {
 
-                                          
-    //                                     },
-    //                                   )
-    //                                 ],
-    //                                 content: text(
-    //                                     globals.mainschedule.prt()
-    //                                     ),);
-    //                             },
-    //                           );
-    //   });
-    // });
-                
+            //                                     },
+            //                                   )
+            //                                 ],
+            //                                 content: text(
+            //                                     globals.mainschedule.prt()
+            //                                     ),);
+            //                             },
+            //                           );
+            //   });
+            // });
 
-
-    //         },)
+            //         },)
           ],
         ),
       ),
@@ -169,15 +165,22 @@ class _MyScheduleState extends State<MySchedule> {
       MaterialPageRoute(builder: (context) => page),
     );
     if (newCoin != null) {
-      setState(() {
-        DateTime today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
+      setState(()  {
+        DateTime today = DateTime(
+            DateTime.now().year, DateTime.now().month, DateTime.now().day);
         String formattedDate = globals.getDayKey(today);
-        globals.mainSchedule.AddItem(newCoin);
-        if(newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))){
-        globals
-                .days.days[formattedDate].pendingCoins.add(newCoin.HabitCoin);
-        }
+        if(globals.UseCloudSync)
+          {
+             addCoinToCloud(newCoin).then((id){
+              newCoin.HabitCoin.CloudID = id;
 
+            });
+          }
+        globals.mainSchedule.AddItem(newCoin);
+        if (newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))) {
+          globals.days.days[formattedDate].pendingCoins.add(newCoin.HabitCoin);
+        }
+        print(newCoin.HabitCoin.CloudID);
         globals.mainSchedule.saveLocally();
         globals.days.saveLocally();
       });
@@ -192,23 +195,28 @@ class _MyScheduleState extends State<MySchedule> {
     );
     if (newCoin != null) {
       setState(() {
-        DateTime today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
+        DateTime today = DateTime(
+            DateTime.now().year, DateTime.now().month, DateTime.now().day);
         String formattedDate = globals.getDayKey(today);
         if (newCoin.Delete) {
           globals.mainSchedule.RemoveItem(s);
-          globals
-                .days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
-          
+          globals.days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
+          if(globals.UseCloudSync)
+          {
+            deleteCoinFromCloud(s.HabitCoin.CloudID);
+          }
         } else {
-          globals
-                .days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
+          globals.days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
           s.DaysOfWeek = newCoin.DaysOfWeek;
           s.HabitCoin = newCoin.HabitCoin;
-if(newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))){
-          globals
-                .days.days[formattedDate].pendingCoins.add(newCoin.HabitCoin);
-}
-
+          if (newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))) {
+            globals.days.days[formattedDate].pendingCoins
+                .add(newCoin.HabitCoin);
+          }
+          if(globals.UseCloudSync)
+          {
+            updateCoinInCloud(s);
+          }
         }
 
         //globals.mainSchedule.AddItem(newCoin);
@@ -217,6 +225,5 @@ if(newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))){
       globals.mainSchedule.saveLocally();
       globals.days.saveLocally();
     }
-    
   }
 }

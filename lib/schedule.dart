@@ -65,6 +65,12 @@ class Schedule {
 
     return s;
   }
+
+   Schedule.withItems(List<ScheduleItem> items)
+  {
+Items = items;
+
+  }
   
 
   String prt()

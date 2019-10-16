@@ -206,6 +206,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
+                  saveName(txtName.text);
                   setState(() {
                     _currentIndex = 2;
                   });
@@ -335,6 +336,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     si.LastDate = DateTime(9999);
                     si.HabitCoin = coin;
                     schedule.AddItem(si);
+                    globals.mainSchedule = schedule;
                     print(schedule.toJson().toString());
                     _currentIndex = 4;
                   });
@@ -428,10 +430,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
-                  saveName(txtName.text);
-                  saveSchedule(schedule);
+                  
+                  if(!LoggedIn) {saveSchedule(schedule);
+                 
+                  }
+                  
                   saveOnboardingComplete();
-                  globals.mainSchedule = schedule;
+                  
                   globals.ScheduleLoaded = true;
                   globals.days = new DayList();
                   globals.DaysLoaded = true;
@@ -749,6 +754,44 @@ class _CloudSyncState extends State<CloudSync> {
       MaterialPageRoute(builder: (context) => page),
     );
     if (loggedin != null && loggedin) {
+            userExists().then((e) {
+        if (e) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              // return object of type Dialog
+              return AlertDialog(
+                title: Text("Select Data?"),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("This Device"),
+                    onPressed: () {
+                      saveScheduleToCloud();
+                      Navigator.pop(context);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("Cloud Data"),
+                    onPressed: () {
+                      loadScheduleFromCloud();
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text('You already have cloud data synced, would you like to keep the data from this device or the data in the cloud? This choice cannot be undone.')
+                  ],
+                ),
+              );
+            },
+          );
+        }
+        else{
+          saveScheduleToCloud();
+        }
+      });
       setState(() {
         LoggedIn = true;
       });

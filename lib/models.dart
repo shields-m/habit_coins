@@ -6,12 +6,13 @@ import 'localData.dart';
 
 class Coin {
   String Name;
-
+  String CloudID;
   IconData Icon;
 
   Coin(String name, IconData icon) {
     Icon = icon;
     Name = name;
+    CloudID = '';
   }
 
   Coin.fromDynamic(dynamic data) {
@@ -24,6 +25,7 @@ class Coin {
         json['name'],
         IconData(int.parse(json['icon'].toString()),
             fontFamily: 'MaterialIcons'));
+        c.CloudID = json['cloudId'].toString();
     //print(c.Icon.codePoint);
 
     return c;
@@ -32,6 +34,7 @@ class Coin {
   Map<String, dynamic> toJson() => {
         'name': Name,
         'icon': Icon.codePoint,
+        'cloudId' : CloudID,
       };
 
   @override
