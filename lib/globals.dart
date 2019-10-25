@@ -9,8 +9,11 @@ import 'models.dart';
 
 bool ScheduleLoaded = false;
 bool DaysLoaded = false;
+bool MonthsLoaded = false;
 
 Schedule mainSchedule = new Schedule();
+
+MonthsList monthsList = new MonthsList();
 
 DayList days = new DayList();
 

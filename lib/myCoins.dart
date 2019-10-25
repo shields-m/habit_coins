@@ -7,12 +7,16 @@ import 'package:habit_coins/schedule.dart';
 import 'package:intl/intl.dart';
 import 'package:habit_coins/globals.dart' as globals;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
 DateTime selectedDate;
 bool isFuture;
 bool isToday;
 bool isPast;
+
+DateTime _currentMonth;
+String _currentMonthName;
 
 class MyCoins extends StatefulWidget {
   MyCoins() {
@@ -21,8 +25,12 @@ class MyCoins extends StatefulWidget {
     isFuture = false;
     isToday = true;
     isPast = false;
+
+    _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    _currentMonthName = new DateFormat("LLL yyyy").format(_currentMonth);
   }
-  Jar jar = new Jar.fromDay(globals.days.days[globals.getDayKey(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))]);
+  Jar jar = new Jar.fromDay(globals.days.days[globals.getDayKey(DateTime(
+      DateTime.now().year, DateTime.now().month, DateTime.now().day))]);
 
   _MyCoinsState createState() => _MyCoinsState();
 }
@@ -38,10 +46,7 @@ class _MyCoinsState extends State<MyCoins> {
       if (isFuture) {
         coins = globals.mainSchedule.getCoinsForDay(selectedDate);
       } else {
-                    
-        coins = globals
-            .days.days[globals.getDayKey(selectedDate)].pendingCoins;
-            
+        coins = globals.days.days[globals.getDayKey(selectedDate)].pendingCoins;
       }
       return Column(
         children: <Widget>[
@@ -70,7 +75,7 @@ class _MyCoinsState extends State<MyCoins> {
                 ),
                 new GestureDetector(
                   onTap: () {
-                    setDate(selectedDate.add(new Duration(days: 1)));
+                    setDate(selectedDate.add(new Duration(hours: 26)));
                   },
                   child: new Icon(
                     Icons.keyboard_arrow_right,
@@ -88,27 +93,27 @@ class _MyCoinsState extends State<MyCoins> {
         ],
       );
     } else {
-      loadSchedule().then((s) {
-        loadDays().then((d) {
-          setState(() {
-            Day today = new Day();
-            globals.days = d;
-            if (!globals.days.days
-                .containsKey(globals.getDayKey(selectedDate))) {
-              today.coinsInJar = new List<Coin>();
+      // loadschedule().then((s) {
+      //   loaddays().then((d) {
+      //     setstate(() {
+      //       day today = new day();
+      //       globals.days = d;
+      //       if (!globals.days.days
+      //           .containskey(globals.getdaykey(selecteddate))) {
+      //         today.coinsinjar = new list<coin>();
 
-              today.pendingCoins = s.getCoinsForDay(selectedDate);
-              globals.days.days[globals.getDayKey(selectedDate)] = today;
-            } else {
-              today = globals.days.days[globals.getDayKey(selectedDate)];
-            }
-            this.widget.jar = new Jar.fromDay(today);
-            globals.mainSchedule = s;
-            
-            //print(json.encode(globals.days));
-          });
-        });
-      });
+      //         today.pendingcoins = s.getcoinsforday(selecteddate);
+      //         globals.days.days[globals.getdaykey(selecteddate)] = today;
+      //       } else {
+      //         today = globals.days.days[globals.getdaykey(selecteddate)];
+      //       }
+      //       this.widget.jar = new jar.fromday(today);
+      //       globals.mainschedule = s;
+
+      //       //print(json.encode(globals.days));
+      //     });
+      //   });
+      // });
       return LinearProgressIndicator();
     }
   }
@@ -118,58 +123,98 @@ class _MyCoinsState extends State<MyCoins> {
         context: context,
         initialDate: new DateTime.now(),
         firstDate: new DateTime(2016),
-        lastDate: new DateTime(2020));
-    if (picked != null) setState(() => setDate(picked));
+        lastDate: new DateTime(9999));
+    if (picked != null)  setDate(picked);
   }
 
-  void setDate(DateTime dateTime) {
-    setState(() {
-      DateTime newDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
-      DateTime now = DateTime(
-          DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  Future<void> setDate(DateTime dateTime) async {
+    DateTime newDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    DateTime now =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
+    if (newDate.isBefore(now.add(Duration(days: -30)))) {
+      Fluttertoast.showToast(
+          msg: "You can only go back 30 days in this view",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.black.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } else if (newDate.isAfter(now.add(Duration(days: 15)))) {
+      Fluttertoast.showToast(
+          msg: "You can only go forward two weeks in this view",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.black.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } else {
       selectedDate = newDate;
-
+      String dateKey = globals.getDayKey(newDate);
+      Jar jar;
       if (newDate.isAtSameMomentAs(now)) {
         isToday = true;
         isFuture = false;
         isPast = false;
-        if (!globals.days.days.containsKey(globals.getDayKey(newDate))) {
-          Day today = new Day();
-          today.coinsInJar = new List<Coin>();
+        if (!globals.days.days.containsKey(dateKey)) {
+          if (globals.UseCloudSync) {
+            globals.days.days[dateKey] = await getDayFromCloud(newDate);
+          } else {
+            Day today = new Day();
+            today.coinsInJar = new List<Coin>();
 
-          today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
-          globals.days.days[globals.getDayKey(newDate)] = today;
+            today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
+            globals.days.days[dateKey] = today;
+          }
+        } else {
+          if (globals.UseCloudSync &&
+              globals.days.days[dateKey].lastGotFromCloud
+                  .isBefore(DateTime.now().add(Duration(minutes: -10)))) {
+            //get from cloud if it is more than 10 minutes old
+            globals.days.days[dateKey] = await getDayFromCloud(newDate);
+          }
         }
-        this.widget.jar = new Jar.fromDay(
-            globals.days.days[globals.getDayKey(newDate)]);
+        jar = new Jar.fromDay(globals.days.days[dateKey]);
       } else if (newDate.isAfter(now)) {
         isToday = false;
         isFuture = true;
         isPast = false;
-        this.widget.jar = new Jar();
+        jar = new Jar();
       } else if (newDate.isBefore(now)) {
         isToday = false;
         isFuture = false;
         isPast = true;
 
-        if (!globals.days.days.containsKey(globals.getDayKey(newDate))) {
-          Day today = new Day();
-          today.coinsInJar = new List<Coin>();
+        if (!globals.days.days.containsKey(dateKey)) {
+          if (globals.UseCloudSync) {
+            globals.days.days[dateKey] = await getDayFromCloud(newDate);
+          } else {
+            Day today = new Day();
+            today.coinsInJar = new List<Coin>();
 
-          today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
-
-          globals.days.days[globals.getDayKey(newDate)] = today;
+            today.pendingCoins = globals.mainSchedule.getCoinsForDay(newDate);
+            globals.days.days[dateKey] = today;
+          }
+        } else {
+          if (globals.UseCloudSync &&
+              globals.days.days[dateKey].lastGotFromCloud
+                  .isBefore(DateTime.now().add(Duration(days: -1)))) {
+            //get from cloud if it is more than 1 day old
+            globals.days.days[dateKey] = await getDayFromCloud(newDate);
+          }
         }
-        this.widget.jar = new Jar.fromDay(
-            globals.days.days[globals.getDayKey(newDate)]);
+        jar = new Jar.fromDay(globals.days.days[dateKey]);
       }
 
-      //print(json.encode(globals.days));
-    });
+      setState(() {
+        this.widget.jar = jar;
+      });
+    }
+    //print(json.encode(globals.days));
   }
 }
-
 
 class ScaleAnimation extends StatefulWidget {
   @override
@@ -204,23 +249,17 @@ class _ScaleAnimationState extends State<ScaleAnimation>
 
   @override
   Widget build(BuildContext context) {
-
-    
-     return ScaleTransition(
-          scale: animation,
-          child: Container(
-            
-            child: Image.asset(
-              'assets/images/thumbsup.png',
-              fit: BoxFit.fitWidth,
-              
-            ),
-          ),
-        );
+    return ScaleTransition(
+      scale: animation,
+      child: Container(
+        child: Image.asset(
+          'assets/images/thumbsup.png',
+          fit: BoxFit.fitWidth,
+        ),
+      ),
+    );
   }
 }
-
-
 
 class JarWidget extends StatefulWidget {
   Jar _jar;
@@ -234,13 +273,8 @@ class JarWidget extends StatefulWidget {
 }
 
 class _JarWidgetState extends State<JarWidget> {
-
   AnimationController animationController;
   Animation<double> animation;
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -251,12 +285,20 @@ class _JarWidgetState extends State<JarWidget> {
       onAccept: (Coin data) {
         if (!this.widget._jar.coins.contains(data)) {
           setState(() {
+            String dt = globals.getDayKey(selectedDate);
             // this.widget._jar.coins.add(data);
-            globals.days.days[globals.getDayKey(selectedDate)].coinsInJar
-                .add(data);
-            globals
-                .days.days[globals.getDayKey(selectedDate)].pendingCoins
-                .remove(data);
+            globals.days.days[dt].coinsInJar.add(data);
+            globals.days.days[dt].pendingCoins.remove(data);
+
+            if (!globals.monthsList.Months.containsKey(_currentMonthName)) {
+              globals.monthsList.Months[_currentMonthName] =
+                  new Month(_currentMonthName);
+            }
+            if (globals.days.days[dt].complete()) {
+              globals.monthsList.Months[_currentMonthName].DaysCompleted
+                  .add(dt);
+              globals.monthsList.saveLocally();
+            }
 
             globals.days.saveLocally();
           });
@@ -267,12 +309,13 @@ class _JarWidgetState extends State<JarWidget> {
           fit: StackFit.expand,
           children: <Widget>[
             Container(
-              child: this.widget._jar.day.complete() ?  
-             
-              Container(padding: EdgeInsets.symmetric(vertical: 10, horizontal: 90),child: ScaleAnimation(),) 
-            
-            
-            : Container(),
+              child: this.widget._jar.day.complete()
+                  ? Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 90),
+                      child: ScaleAnimation(),
+                    )
+                  : Container(),
             ),
             new SvgPicture.asset('assets/images/jar.svg',
                 semanticsLabel: 'Jar'),
@@ -282,13 +325,6 @@ class _JarWidgetState extends State<JarWidget> {
               margin: EdgeInsets.symmetric(
                 horizontal: 20,
               ),
-              //color: Colors.white.withOpacity(1),
-              //decoration: BoxDecoration(
-              //  image: DecorationImage(
-              //    image: AssetImage("assets/images/jar.png"),
-              //    fit: BoxFit.cover,
-              //  ),
-              //),
               child: Wrap(
                   crossAxisAlignment: WrapCrossAlignment.start,
                   alignment: WrapAlignment.spaceEvenly,
@@ -303,8 +339,20 @@ class _JarWidgetState extends State<JarWidget> {
                               if (isToday &&
                                   dir.velocity.pixelsPerSecond.direction < 0) {
                                 setState(() {
+                                  String dt = globals.getDayKey(selectedDate);
+                                  bool alreadyComplete =
+                                      globals.days.days[dt].complete();
+
                                   _coinRowStateKey.currentState.addCoin(coin);
                                   this.widget._jar.coins.remove(coin);
+
+                                  if (alreadyComplete &&
+                                      !globals.days.days[dt].complete()) {
+                                    while (globals.monthsList
+                                        .Months[_currentMonthName].DaysCompleted
+                                        .remove(dt)) {}
+                                    globals.monthsList.saveLocally();
+                                  }
                                   globals.days.saveLocally();
                                 });
                               }
@@ -327,8 +375,13 @@ class _JarWidgetState extends State<JarWidget> {
                                         FlatButton(
                                           child: Text("Yes"),
                                           onPressed: () {
-                                            print('Removing ' + coin.Name);
                                             setState(() {
+                                              String dt = globals
+                                                  .getDayKey(selectedDate);
+                                              bool alreadyComplete = globals
+                                                  .days.days[dt]
+                                                  .complete();
+
                                               _coinRowStateKey.currentState
                                                   .addCoin(coin);
                                               this
@@ -336,6 +389,18 @@ class _JarWidgetState extends State<JarWidget> {
                                                   ._jar
                                                   .coins
                                                   .remove(coin);
+
+                                              if (alreadyComplete &&
+                                                  !globals.days.days[dt]
+                                                      .complete()) {
+                                                while (globals
+                                                    .monthsList
+                                                    .Months[_currentMonthName]
+                                                    .DaysCompleted
+                                                    .remove(dt)) {}
+                                                globals.monthsList
+                                                    .saveLocally();
+                                              }
                                               globals.days.saveLocally();
                                             });
 
@@ -415,102 +480,104 @@ class _CoinRowState extends State<CoinRow> {
         children: this
             .widget
             .coins
-            .map((coin) => LongPressDraggable(
-                  hapticFeedbackOnStart: true,
-                  maxSimultaneousDrags: isToday ? 1 : 0,
-                  onDragCompleted: () {
-                    setState(() {
-                      //this.widget.coins.remove(coin);
-                    });
-                  },
-                  data: coin,
+            .map(
+              (coin) => LongPressDraggable(
+                hapticFeedbackOnStart: true,
+                maxSimultaneousDrags: isToday ? 1 : 0,
+                onDragCompleted: () {
+                  setState(() {
+                    //this.widget.coins.remove(coin);
+                  });
+                },
+                data: coin,
 
-                  // axis: Axis.vertical,
-                  child: Container(
-                    margin: EdgeInsets.all(6),
-                    width: 110.0,
-                    height: 110.0,
-                    decoration: new BoxDecoration(
-                      color: isToday
-                          ? Colors.white
-                          : Colors.black.withOpacity(0.01),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black54,
-                          spreadRadius: 1,
-                          blurRadius: 4,
-                          offset: Offset(0.0, 0),
-                        )
-                      ],
+                // axis: Axis.vertical,
+                child: Container(
+                  margin: EdgeInsets.all(6),
+                  width: 110.0,
+                  height: 110.0,
+                  decoration: new BoxDecoration(
+                    color:
+                        isToday ? Colors.white : Colors.black.withOpacity(0.01),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 4,
                     ),
-                    child: Center(
-                      child: Icon(
-                        coin.Icon,
-                        size: 44,
-                      ),),
-                    ),
-                  
-                  feedback: Container(
-                    margin: EdgeInsets.all(6),
-                    width: 120.0,
-                    height: 120.0,
-                    decoration: new BoxDecoration(
-                      color: Colors.white.withOpacity(.8),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black54,
-                          spreadRadius: 1,
-                          blurRadius: 4,
-                          offset: Offset(0.0, 0),
-                        )
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        coin.Icon,
-                        size: 44,
-                      ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black54,
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: Offset(0.0, 0),
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      coin.Icon,
+                      size: 44,
                     ),
                   ),
-                  childWhenDragging: Container(
-                    margin: EdgeInsets.all(6),
-                    width: 110.0,
-                    height: 110.0,
-                    decoration: new BoxDecoration(
-                      color: Colors.white.withOpacity(.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black.withOpacity(0.2),
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black54.withOpacity(0.2),
-                          spreadRadius: 1,
-                          blurRadius: 4,
-                          offset: Offset(0.0, 0),
-                        )
-                      ],
+                ),
+
+                feedback: Container(
+                  margin: EdgeInsets.all(6),
+                  width: 120.0,
+                  height: 120.0,
+                  decoration: new BoxDecoration(
+                    color: Colors.white.withOpacity(.8),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 4,
                     ),
-                    child: Center(
-                      child: Icon(
-                        coin.Icon,
-                        size: 44,
-                        color: Colors.black.withOpacity(0.2),
-                      ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black54,
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: Offset(0.0, 0),
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      coin.Icon,
+                      size: 44,
                     ),
                   ),
-                ),)
+                ),
+                childWhenDragging: Container(
+                  margin: EdgeInsets.all(6),
+                  width: 110.0,
+                  height: 110.0,
+                  decoration: new BoxDecoration(
+                    color: Colors.white.withOpacity(.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.black.withOpacity(0.2),
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black54.withOpacity(0.2),
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: Offset(0.0, 0),
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      coin.Icon,
+                      size: 44,
+                      color: Colors.black.withOpacity(0.2),
+                    ),
+                  ),
+                ),
+              ),
+            )
             .toList(),
       ),
     );

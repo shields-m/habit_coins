@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:habit_coins/main.dart';
+import 'package:habit_coins/myCoins.dart';
 import 'package:habit_coins/onboarding.dart';
 import 'package:habit_coins/globals.dart' as globals;
 import 'package:intl/intl.dart';
@@ -9,7 +10,6 @@ import 'package:intl/intl.dart';
 import 'localData.dart';
 import 'models.dart';
 import 'package:habit_coins/auth/authentication.dart';
-
 
 class Splash extends StatefulWidget {
   @override
@@ -27,11 +27,10 @@ class _SplashState extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
-    
     Auth auth = new Auth();
 
     loadOnboardStatus().then((x) {
-      Future.delayed(Duration(seconds: 2)).then((n) {
+      Future.delayed(Duration(seconds: 0)).then((n) {
         //doIKnowIfOnboardingIsComplete = true;
         onboardingComplete = x;
         if (onboardingComplete) {
@@ -52,32 +51,42 @@ class _SplashState extends State<Splash> {
             loadDays().then((d) {
               globals.days = d;
               globals.DaysLoaded = true;
-              DateTime selectedDate = DateTime(DateTime.now().year,
-                  DateTime.now().month, DateTime.now().day);
-              if (!globals.days.days
-                  .containsKey(globals.getDayKey(selectedDate))) {
-                Day today = new Day();
+              loadMonths().then((m) {
+                globals.monthsList = m;
+                globals.MonthsLoaded = true;
+                DateTime selectedDate = DateTime(DateTime.now().year,
+                    DateTime.now().month, DateTime.now().day);
+                String dateKey = globals.getDayKey(selectedDate);
 
-                today.coinsInJar = new List<Coin>();
+                if (globals.UseCloudSync) {
+                  getDayFromCloud(selectedDate).then((d) {
+                    globals.days.days[dateKey] = d;
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MyHomePage(
+                                  title: 'HabitCoins',
+                                )));
+                  });
+                } else {
+                  if (!globals.days.days
+                      .containsKey(globals.getDayKey(selectedDate))) {
+                    Day today = new Day();
 
-                today.pendingCoins =
-                    globals.mainSchedule.getCoinsForDay(selectedDate);
-                globals.days.days[globals.getDayKey(selectedDate)] = today;
-              }
+                    today.coinsInJar = new List<Coin>();
 
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MyHomePage(
-                            title: 'HabitCoins',
-                          )));
-              //MyHomePage home = new MyHomePage(title: 'HabitCoins');
-              //  Navigator.pushAndRemoveUntil(
-              //      context,
-              //      MaterialPageRoute(
-              //        builder: (BuildContext context) => home,
-              //      ),
-              //      ModalRoute.withName('/'));
+                    today.pendingCoins =
+                        globals.mainSchedule.getCoinsForDay(selectedDate);
+                    globals.days.days[dateKey] = today;
+                  }
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MyHomePage(
+                                title: 'HabitCoins',
+                              )));
+                }
+              });
             });
           });
         } else {
@@ -100,9 +109,19 @@ class _SplashState extends State<Splash> {
               height: 300,
             ),
           ),
-          Text(
-            'HabitCoins',
-            style: TextStyle(color: Colors.white, fontSize: 48),
+          // Text(
+          //   'HabitCoins',
+          //   style: TextStyle(color: Colors.white, fontSize: 48),
+          // ),
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 0),
+              child: Image.asset(
+                'assets/images/habitcoins logo.png',
+                fit: BoxFit.contain,
+                height: 150,
+              ),
+            ),
           ),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -112,7 +131,7 @@ class _SplashState extends State<Splash> {
             style: TextStyle(color: Colors.white, fontSize: 28),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: EdgeInsets.symmetric(vertical: 10),
           ),
           CircularProgressIndicator(
             valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),

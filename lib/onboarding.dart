@@ -104,7 +104,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
               children: <Widget>[
                 Text(
                     'This is HabitCoins from Unless Coaching, the app for helping you form new habits by giving you a quick and easy way to track your achievements each day. Follow through the next few steps to get set up and begin creating new positive habits.',
-                    
                     textAlign: TextAlign.left,
                     style: TextStyle(
                       fontSize: 22,
@@ -181,7 +180,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
               children: <Widget>[
                 Text(
                   'Please Enter Your Name',
-                  
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22,
@@ -206,7 +204,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
-                  saveName(txtName.text);
+                  
                   setState(() {
                     _currentIndex = 2;
                   });
@@ -430,13 +428,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
+                  saveName(txtName.text);
+                  if (!LoggedIn) {
+                    saveSchedule(schedule);
                   
-                  if(!LoggedIn) {saveSchedule(schedule);
-                 
-                  }
-                  
+
                   saveOnboardingComplete();
-                  
+
                   globals.ScheduleLoaded = true;
                   globals.days = new DayList();
                   globals.DaysLoaded = true;
@@ -448,8 +446,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
                   today.pendingCoins =
                       globals.mainSchedule.getCoinsForDay(selectedDate);
-                  globals.days.days[globals.getDayKey(selectedDate)] =
-                      today;
+                  globals.days.days[globals.getDayKey(selectedDate)] = today;
+
+                  }
                   Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
@@ -492,10 +491,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
               fit: BoxFit.contain,
               height: 100,
             ),
-            Container(
-              padding: const EdgeInsets.all(6.0),
-              child: Text('HabitCoins'),
-            )
+            Image.asset(
+              'assets/images/habitcoins logo.png',
+              fit: BoxFit.contain,
+              height: 40,
+            ),
+            // Container(
+            //     padding: const EdgeInsets.all(6.0), child: Text(widget.title),)
           ],
         ),
       ),
@@ -510,17 +512,10 @@ class FirstCoinBuilder extends StatefulWidget {
 }
 
 class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
- 
   @override
   initState() {
-    
-
     super.initState();
   }
-
- 
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -568,7 +563,6 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
           ),
           Text(
             'Give it a name',
-            
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22,
@@ -584,7 +578,6 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
           ),
           Text(
             'Select an icon',
-            
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22,
@@ -601,13 +594,13 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
             onPressed: () {
               FocusScope.of(context).requestFocus(new FocusNode());
               selectIcon(context).then((newIcon) {
-                    if (newIcon != null) {
-                      setState(() {
-                        print(newIcon);
-                        coin.Icon = newIcon;
-                      });
-                    }
+                if (newIcon != null) {
+                  setState(() {
+                    print(newIcon);
+                    coin.Icon = newIcon;
                   });
+                }
+              });
             },
           ),
         ],
@@ -630,7 +623,6 @@ class _selectWeekDaysState extends State<selectWeekDays> {
       children: <Widget>[
         Text(
           'Select the days you would like to complete your new HabitCoin',
-          
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
@@ -754,7 +746,7 @@ class _CloudSyncState extends State<CloudSync> {
       MaterialPageRoute(builder: (context) => page),
     );
     if (loggedin != null && loggedin) {
-            userExists().then((e) {
+      userExists().then((e) {
         if (e) {
           showDialog(
             context: context,
@@ -767,35 +759,61 @@ class _CloudSyncState extends State<CloudSync> {
                     child: Text("This Device"),
                     onPressed: () {
                       saveScheduleToCloud();
+                      saveAllDaysToCloud();
+                      saveAlltMonthsToCloud();
                       Navigator.pop(context);
                     },
                   ),
                   FlatButton(
                     child: Text("Cloud Data"),
                     onPressed: () {
-                      loadScheduleFromCloud();
-                      Navigator.pop(context);
+                      sortOutCloud().then((_) {
+                        Navigator.pop(context);
+                      });
                     },
                   )
                 ],
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text('You already have cloud data synced, would you like to keep the data from this device or the data in the cloud? This choice cannot be undone.')
+                    Text(
+                        'You already have cloud data synced, would you like to keep the data from this device or the data in the cloud? This choice cannot be undone.')
                   ],
                 ),
               );
             },
           );
-        }
-        else{
+        } else {
           saveScheduleToCloud();
+          saveAllDaysToCloud();
+          saveAlltMonthsToCloud();
         }
       });
       setState(() {
         LoggedIn = true;
       });
     }
+  }
+
+  Future<bool> sortOutCloud() async {
+    DateTime selectedDate =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+    String month = DateFormat("LLL yyyy").format(selectedDate);
+    await loadScheduleFromCloud();
+    globals.monthsList = new MonthsList();
+
+    globals.monthsList.Months[month] = await getMonthFromCloud(month);
+    globals.monthsList.saveLocally();
+
+    globals.days = new DayList();
+
+    String dateKey = globals.getDayKey(selectedDate);
+
+    globals.days.days[dateKey] = await getDayFromCloud(selectedDate);
+    globals.days.saveLocally();
+
+    return true;
   }
 
   @override
@@ -812,7 +830,6 @@ class _CloudSyncState extends State<CloudSync> {
         ),
         Text(
           'You can log into cloud sync to save your HabitCoins online to share across devices or with your team',
-          
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,

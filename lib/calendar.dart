@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:habit_coins/globals.dart' as globals;
+import 'package:habit_coins/localData.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:swipedetector/swipedetector.dart';
 
 class Calendar extends StatefulWidget {
   DateTime _currentMonth;
+  String _currentMonthName;
   DateTime _lastDayOfCurrentMonth;
 
   Calendar() {
@@ -15,7 +19,7 @@ class Calendar extends StatefulWidget {
 
   void sortOutDates() {
     _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
-
+    _currentMonthName = new DateFormat("LLL yyyy").format(_currentMonth);
     _lastDayOfCurrentMonth =
         DateTime(_currentMonth.year, _currentMonth.month + 1, _currentMonth.day)
             .add(Duration(days: -1));
@@ -25,42 +29,109 @@ class Calendar extends StatefulWidget {
 List<String> DaysOfWeek = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
 class _CalendarState extends State<Calendar> {
-  void addMonth() {
-    setState(() {
-      this.widget._currentMonth = DateTime(this.widget._currentMonth.year,
-          this.widget._currentMonth.month + 1, 1);
+  void addMonth() async {
+    DateTime cm = DateTime(
+        this.widget._currentMonth.year, this.widget._currentMonth.month + 1, 1);
+    if (!cm.isAfter(DateTime(DateTime.now().year, DateTime.now().month, 1))) {
+      String cmname = new DateFormat("LLL yyyy").format(cm);
 
-      this.widget._lastDayOfCurrentMonth = DateTime(
-              this.widget._currentMonth.year,
-              this.widget._currentMonth.month + 1,
-              this.widget._currentMonth.day)
-          .add(Duration(days: -1));
+      DateTime ldocm =
+          DateTime(cm.year, cm.month + 1, cm.day).add(Duration(days: -1));
+
+      if (!globals.monthsList.Months.containsKey(cmname)) {
+        if (globals.UseCloudSync) {
+          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        }
+      } else {
+        if (globals.monthsList.Months[cmname].lastGotFromCloud
+            .isBefore(DateTime.now().add(Duration(days: -1)))) {
+          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        }
+      }
+
+      setState(() {
+        this.widget._currentMonth = cm;
+        this.widget._currentMonthName = cmname;
+        this.widget._lastDayOfCurrentMonth = ldocm;
+      });
+    }
+    else
+    {
+Fluttertoast.showToast(
+          msg: "The future is currently unknown",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.black.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+    }
+  }
+
+  void thisMonth() async {
+    DateTime cm = DateTime(DateTime.now().year, DateTime.now().month, 1);
+
+    String cmname = new DateFormat("LLL yyyy").format(cm);
+
+    DateTime ldocm =
+        DateTime(cm.year, cm.month + 1, cm.day).add(Duration(days: -1));
+
+    if (!globals.monthsList.Months.containsKey(cmname)) {
+      if (globals.UseCloudSync) {
+        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      }
+    } else {
+      if (globals.monthsList.Months[cmname].lastGotFromCloud
+          .isBefore(DateTime.now().add(Duration(days: -1)))) {
+        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      }
+    }
+
+    setState(() {
+      this.widget._currentMonth = cm;
+      this.widget._currentMonthName = cmname;
+      this.widget._lastDayOfCurrentMonth = ldocm;
     });
   }
 
   bool DayCompleted(int dayOfMonth) {
     //bool x = true;
-     String dt = globals.getDayKey(DateTime(
-        this.widget._currentMonth.year,
-        this.widget._currentMonth.month,
-        dayOfMonth));
-  
-        //print(dt);
-    return globals.days.days.containsKey(dt) &&
-        globals.days.days[dt].complete();
+    String dt = globals.getDayKey(DateTime(this.widget._currentMonth.year,
+        this.widget._currentMonth.month, dayOfMonth));
+
+    //print(dt);
+    return globals.monthsList.Months
+            .containsKey(this.widget._currentMonthName) &&
+        globals.monthsList.Months[this.widget._currentMonthName].DaysCompleted
+            .contains(dt);
     //return x;
   }
 
-  void subtractMonth() {
-    setState(() {
-      this.widget._currentMonth = DateTime(this.widget._currentMonth.year,
-          this.widget._currentMonth.month - 1, 1);
+  void subtractMonth() async {
+    DateTime cm = DateTime(
+        this.widget._currentMonth.year, this.widget._currentMonth.month - 1, 1);
 
-      this.widget._lastDayOfCurrentMonth = DateTime(
-              this.widget._currentMonth.year,
-              this.widget._currentMonth.month + 1,
-              this.widget._currentMonth.day)
-          .add(Duration(days: -1));
+    String cmname = new DateFormat("LLL yyyy").format(cm);
+
+    DateTime ldocm =
+        DateTime(cm.year, cm.month + 1, cm.day).add(Duration(days: -1));
+
+    if (!globals.monthsList.Months.containsKey(cmname)) {
+      if (globals.UseCloudSync) {
+        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      }
+    } else {
+      if (globals.monthsList.Months[cmname].lastGotFromCloud
+          .isBefore(DateTime.now().add(Duration(days: -1)))) {
+        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      }
+    }
+
+    setState(() {
+      this.widget._currentMonth = cm;
+      this.widget._currentMonthName = cmname;
+      this.widget._lastDayOfCurrentMonth = ldocm;
     });
   }
 
@@ -86,19 +157,10 @@ class _CalendarState extends State<Calendar> {
             ),
             new GestureDetector(
               onTap: () {
-                setState(() {
-                  this.widget._currentMonth =
-                      DateTime(DateTime.now().year, DateTime.now().month, 1);
-
-                  this.widget._lastDayOfCurrentMonth = DateTime(
-                          this.widget._currentMonth.year,
-                          this.widget._currentMonth.month + 1,
-                          this.widget._currentMonth.day)
-                      .add(Duration(days: -1));
-                });
+                thisMonth();
               },
               child: new Text(
-                new DateFormat("LLL yyyy").format(this.widget._currentMonth),
+                this.widget._currentMonthName,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
             ),
@@ -113,6 +175,10 @@ class _CalendarState extends State<Calendar> {
             ),
           ],
         ),
+        SwipeDetector(
+          onSwipeLeft: () => addMonth(),
+          onSwipeRight: () => subtractMonth(),
+          child:
         GridView.count(
           shrinkWrap: true,
           physics: ScrollPhysics(),
@@ -167,7 +233,8 @@ class _CalendarState extends State<Calendar> {
                       : Container(),
             );
           }),
-        )
+        ),
+        ),
       ],
     );
   }

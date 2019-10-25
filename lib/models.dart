@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'localData.dart';
 
@@ -25,7 +26,7 @@ class Coin {
         json['name'],
         IconData(int.parse(json['icon'].toString()),
             fontFamily: 'MaterialIcons'));
-        c.CloudID = json['cloudId'].toString();
+    c.CloudID = json['cloudId'].toString();
     //print(c.Icon.codePoint);
 
     return c;
@@ -34,7 +35,7 @@ class Coin {
   Map<String, dynamic> toJson() => {
         'name': Name,
         'icon': Icon.codePoint,
-        'cloudId' : CloudID,
+        'cloudId': CloudID,
       };
 
   @override
@@ -55,15 +56,102 @@ class Jar {
     day = new Day();
   }
 
-  Jar.withCoins(List<Coin> coinlist)
-  {
+  Jar.withCoins(List<Coin> coinlist) {
     coins = coinlist;
   }
 
-  Jar.fromDay(Day d)
-  {
+  Jar.fromDay(Day d) {
     day = d;
     coins = d.coinsInJar;
+  }
+}
+
+class Month {
+  List<String> DaysCompleted;
+  String MonthName;
+  DateTime lastGotFromCloud;
+
+  Month(String name) {
+    MonthName = name;
+    DaysCompleted = new List();
+    lastGotFromCloud = new DateTime(9999);
+  }
+
+  Month.withDays(String month, List<String> days) {
+    MonthName = month;
+    DaysCompleted = days;
+    lastGotFromCloud = new DateTime(9999);
+  }
+
+  Map<String, dynamic> toFireStoreMap() {
+    Map<String, dynamic> today = {
+      'month': MonthName,
+      'daysCompleted': DaysCompleted,
+    };
+    return today;
+  }
+
+  Map<String, dynamic> toJson() => {
+        'month': MonthName,
+        'daysCompleted': DaysCompleted,
+        'lastGotFromCloud': lastGotFromCloud.millisecondsSinceEpoch
+      };
+
+  factory Month.fromJson(Map<String, dynamic> j) {
+    //print(j);
+    List d = j['daysCompleted'] as List<dynamic>;
+//print(d.toString());
+    List<String> days = d.map((day) => day.toString()).toList();
+    Month s = new Month.withDays(j['month'].toString(), days);
+    try {
+      s.lastGotFromCloud =
+          DateTime.fromMillisecondsSinceEpoch(int.parse(j['lastGotFromCloud']));
+    } catch (e) {
+      s.lastGotFromCloud = new DateTime(9999);
+    }
+    return s;
+  }
+}
+
+class MonthsList {
+  Map<String, Month> Months;
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> monthsmap = new Map();
+
+    List<Month> months = new List();
+
+    Months.forEach((x, x2) {
+      months.add(x2);
+    });
+
+    monthsmap['months'] = months;
+
+    return monthsmap;
+  }
+
+  Future<bool> saveLocally() async {
+    await saveMonths(this);
+
+    return true;
+  }
+
+  MonthsList() {
+    Months = new Map();
+  }
+
+  factory MonthsList.fromJson(Map<String, dynamic> json) {
+    //print(json);
+
+    var days = json['months'] as List<dynamic>;
+
+    //print(items);
+    MonthsList d = new MonthsList();
+
+    days.forEach((item) {
+      d.Months[item['month']] = (Month.fromJson(item));
+    });
+    return d;
   }
 }
 
@@ -71,9 +159,34 @@ class Day {
   List<Coin> pendingCoins;
   List<Coin> coinsInJar;
 
+  DateTime lastGotFromCloud;
+
   Day() {
     pendingCoins = new List();
     coinsInJar = new List();
+    lastGotFromCloud = new DateTime(9999);
+  }
+
+  Map<String, dynamic> toFireStoreMap(String todayKey) {
+    Map<String, dynamic> today = {
+      'date': todayKey,
+      'coinsInJar': coinsInJar
+          .map((coin) => {
+                'name': coin.Name,
+                'icon': coin.Icon.codePoint,
+                'cloudId': coin.CloudID
+              })
+          .toList(),
+      'pendingCoins': pendingCoins
+          .map((coin) => {
+                'name': coin.Name,
+                'icon': coin.Icon.codePoint,
+                'cloudId': coin.CloudID
+              })
+          .toList(),
+    };
+
+    return today;
   }
 
   bool complete() => totalCoinCount() > 0 && pendingCoins.length == 0;
@@ -81,18 +194,38 @@ class Day {
   Map<String, dynamic> toJson() => {
         'pendingCoins': pendingCoins.map((item) => item.toJson()).toList(),
         'coinsInJar': coinsInJar.map((item) => item.toJson()).toList(),
+        'lastGotFromCloud': lastGotFromCloud.millisecondsSinceEpoch
       };
 
   factory Day.fromJson(Map<String, dynamic> json) {
     //print(json);
     var pend = json['pendingCoins'] as List<dynamic>;
+    //print( pend);
     var jar = json['coinsInJar'] as List<dynamic>;
-
+    //print(jar);
     //print(items);
     Day d = new Day();
+    d.pendingCoins = pend
+        .map((item) => new Coin(
+            item['name'],
+            IconData(int.parse(item['icon'].toString()),
+                fontFamily: 'MaterialIcons')))
+        .toList();
+    d.coinsInJar = jar
+        .map((item) => new Coin(
+            item['name'],
+            IconData(int.parse(item['icon'].toString()),
+                fontFamily: 'MaterialIcons')))
+        .toList();
 
-    d.pendingCoins = pend.map((item) => new Coin.fromJson(item)).toList();
-    d.coinsInJar = jar.map((item) => new Coin.fromJson(item)).toList();
+    try {
+      d.lastGotFromCloud = DateTime.fromMillisecondsSinceEpoch(
+          int.parse(json['lastGotFromCloud']));
+    } catch (e) {
+      d.lastGotFromCloud = new DateTime(9999);
+    }
+    //d.pendingCoins = pend.map((item) => new Coin.fromJson(item)).toList();
+    //d.coinsInJar = jar.map((item) => new Coin.fromJson(item)).toList();
     return d;
   }
 
@@ -106,12 +239,28 @@ class DayList {
     days = new HashMap();
   }
 
-  Future<bool> saveLocally() async
-  {
-     await saveDays(this);
+  Future<bool> saveLocally() async {
+    trimList();
+    await saveDays(this);
 
-     return true;
+    return true;
+  }
 
+  void trimList() {
+    int daycount = 30;
+
+    int firstday =
+        int.parse(getDayKey(DateTime.now().add(Duration(days: -daycount))));
+
+    days.removeWhere((key, value) => int.parse(key) < firstday);
+  }
+
+  String getDayKey(DateTime dt) {
+    String d = NumberFormat('0000').format(dt.year) +
+        NumberFormat('00').format(dt.month) +
+        NumberFormat('00').format(dt.day);
+
+    return d;
   }
 
   Map<String, dynamic> toJson() {
@@ -130,9 +279,8 @@ class DayList {
     //print(items);
     DayList d = new DayList();
 
-    days.forEach((item){
+    days.forEach((item) {
       d.days[item['date'].toString()] = Day.fromJson(item['day']);
-
     });
     return d;
   }

@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:habit_coins/myCoins.dart';
 import 'package:habit_coins/mySchedule.dart';
 import 'package:habit_coins/models.dart';
 import 'package:habit_coins/auth/signupsignin.dart';
 import 'package:habit_coins/auth/authentication.dart';
 import 'package:habit_coins/globals.dart' as globals;
+import 'package:intl/intl.dart';
 
 import 'auth/authentication.dart';
 import 'localData.dart';
@@ -106,8 +108,6 @@ class _MeState extends State<Me> {
             ),
           ),
           cloudOptions(),
-          
-          
         ],
       ),
     );
@@ -247,34 +247,60 @@ class _MeState extends State<Me> {
                     child: Text("This Device"),
                     onPressed: () {
                       saveScheduleToCloud();
+                      saveAllDaysToCloud();
+                      saveAlltMonthsToCloud();
                       Navigator.pop(context);
                     },
                   ),
                   FlatButton(
                     child: Text("Cloud Data"),
                     onPressed: () {
-                      loadScheduleFromCloud();
-                      Navigator.pop(context);
+                      sortOutCloud().then((_) {
+                        Navigator.pop(context);
+                      });
                     },
                   )
                 ],
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text('You already have cloud data synced, would you like to keep the data from this device or the data in the cloud? This choice cannot be undone.')
+                    Text(
+                        'You already have cloud data synced, would you like to keep the data from this device or the data in the cloud? This choice cannot be undone.')
                   ],
                 ),
               );
             },
           );
-        }
-        else{
+        } else {
           saveScheduleToCloud();
+          saveAllDaysToCloud();
+          saveAlltMonthsToCloud();
         }
       });
 
       setState(() {});
     }
+  }
+
+  Future<bool> sortOutCloud() async {
+    DateTime selectedDate =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+    String month = DateFormat("LLL yyyy").format(selectedDate);
+    await loadScheduleFromCloud();
+    globals.monthsList = new MonthsList();
+
+    globals.monthsList.Months[month] = await getMonthFromCloud(month);
+    globals.monthsList.saveLocally();
+
+    globals.days = new DayList();
+
+    String dateKey = globals.getDayKey(selectedDate);
+
+    globals.days.days[dateKey] = await getDayFromCloud(selectedDate);
+    globals.days.saveLocally();
+
+    return true;
   }
 
   void signOut() {

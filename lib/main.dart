@@ -133,8 +133,13 @@ class _MyHomePageState extends State<MyHomePage> {
               fit: BoxFit.contain,
               height: 100,
             ),
-            Container(
-                padding: const EdgeInsets.all(6.0), child: Text(widget.title),)
+            Image.asset(
+              'assets/images/habitcoins logo.png',
+              fit: BoxFit.contain,
+              height: 40,
+            ),
+            // Container(
+            //     padding: const EdgeInsets.all(6.0), child: Text(widget.title),)
           ],
 
         ),
