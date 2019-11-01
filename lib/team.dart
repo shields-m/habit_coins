@@ -202,7 +202,7 @@ class _TeamState extends State<Team> {
         Padding(
           padding: EdgeInsets.symmetric(vertical: 50),
           child: Center(
-            child: Text(_isLoading ? 'Team' :
+            child: Text(_isLoading ? 'Loading Team...' :
               globals.myTeam.Name,
               style: TextStyle(fontSize: 36, fontWeight: FontWeight.w700),
             ),
