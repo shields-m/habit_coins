@@ -148,6 +148,31 @@ Future<Day> getDayFromCloud(DateTime date) async {
   return d;
 }
 
+Future<Day> getDayFromCloudForUser(DateTime date, String user) async {
+  String dateKey = globals.getDayKey(date);
+  print('Getting day from cloud: ' + dateKey + ' for ' + user);
+  Day d;
+  await Firestore.instance
+      .collection('users')
+      .document(user)
+      .collection('days')
+      .document(dateKey)
+      .get()
+      .then((doc) {
+    if (doc.exists) {
+      //print(doc.data);
+      d = new Day.fromJson(doc.data);
+    } else {
+      d = new Day();
+      d.coinsInJar = new List<Coin>();
+
+      d.pendingCoins = globals.mainSchedule.getCoinsForDay(date);
+    }
+  });
+  d.lastGotFromCloud = DateTime.now();
+  return d;
+}
+
 Future<bool> saveCurrentMonthToCloud() async {
   String month = new DateFormat("LLL yyyy").format(DateTime.now());
   await Firestore.instance
@@ -188,8 +213,8 @@ Future<bool> saveScheduleToCloud() async {
     print(f.HabitCoin.Name);
 
     DocumentReference ref;
-
-    if (f.HabitCoin.CloudID == null) {
+    print('CloudID: ' + f.HabitCoin.CloudID.toString());
+    if (f.HabitCoin.CloudID == '' || f.HabitCoin.CloudID == null) {
       ref = db
           .collection('users')
           .document(globals.CurrentUser)
@@ -266,13 +291,12 @@ Future<bool> deleteFromCloud() async {
       .document(globals.CurrentUser)
       .collection('schedule')
       .getDocuments()
-      .then((s) async {
+      .then((s) {
     s.documents.forEach((d) {
       batch.delete(d.reference);
     });
-    await batch.commit();
   });
-
+  await batch.commit();
   // Firestore.instance
   //           .collection('users')
   //           .document(globals.CurrentUser)
@@ -291,13 +315,12 @@ Future<bool> deleteMonthsFromCloud() async {
       .document(globals.CurrentUser)
       .collection('months')
       .getDocuments()
-      .then((s) async {
+      .then((s) {
     s.documents.forEach((d) {
       batch.delete(d.reference);
     });
-    await batch.commit();
   });
-
+  await batch.commit();
   return true;
 }
 
@@ -309,13 +332,12 @@ Future<bool> deleteDaysFromCloud() async {
       .document(globals.CurrentUser)
       .collection('days')
       .getDocuments()
-      .then((s) async {
+      .then((s) {
     s.documents.forEach((d) {
       batch.delete(d.reference);
     });
-    await batch.commit();
   });
-
+  await batch.commit();
   return true;
 }
 
@@ -370,14 +392,21 @@ Future<bool> updateCoinInCloud(ScheduleItem item) async {
   return done;
 }
 
+Future<bool> createUserInCloud(String id, String name) async {
+  await Firestore.instance
+      .collection('users')
+      .document(id)
+      .setData({'name': name});
+}
+
 Future<File> saveName(String name) async {
   final path = await _localPath;
   File file = File('$path/name.json');
-  if(globals.UseCloudSync)
-  {
+  if (globals.UseCloudSync) {
     await Firestore.instance
-      .collection('users')
-      .document(globals.CurrentUser).setData({'name' : name});
+        .collection('users')
+        .document(globals.CurrentUser)
+        .setData({'name': name});
   }
   return file.writeAsString(name);
 }
@@ -478,6 +507,28 @@ Future<Month> getMonthFromCloud(String month) async {
   return m;
 }
 
+Future<Month> getMonthFromCloudForUser(String month, String user) async {
+  Month m;
+  print('loading month from cloud ' + month + ' for ' + user);
+  await Firestore.instance
+      .collection('users')
+      .document(user)
+      .collection('months')
+      .document(month)
+      .get()
+      .then((doc) {
+    if (doc.exists) {
+      //print(doc.data);
+      m = new Month.fromJson(doc.data);
+      m.lastGotFromCloud = DateTime.now();
+    } else {
+      m = new Month(month);
+      m.lastGotFromCloud = DateTime.now();
+    }
+  });
+  return m;
+}
+
 Future<File> saveDays(DayList d) async {
   final path = await _localPath;
   File file = File('$path/days.json');
@@ -518,4 +569,132 @@ Future<Schedule> loadSchedule() async {
     globals.ScheduleLoaded = true;
     return new Schedule();
   }
+}
+
+Future<bool> doesTeamExist(String teamID) async {
+  bool exists = false;
+  var doc = await Firestore.instance.collection('teams').document(teamID).get();
+  exists = doc.exists;
+  return exists;
+}
+
+Future<bool> addCurrentUserToTeam(String teamID) async {
+  await Firestore.instance
+      .collection('teams')
+      .document(teamID)
+      .collection('members')
+      .document(globals.CurrentUser)
+      .setData({
+    'dateJoined': DateTime.now(),
+    'role': 'Team Member',
+  });
+
+  await Firestore.instance
+      .collection('users')
+      .document(globals.CurrentUser)
+      .updateData({
+    'teamID': teamID,
+  });
+
+  return true;
+}
+
+Future<bool> leaveTeam(String teamID) async {
+  await Firestore.instance
+      .collection('teams')
+      .document(teamID)
+      .collection('members')
+      .document(globals.CurrentUser)
+      .delete();
+
+  await Firestore.instance
+      .collection('users')
+      .document(globals.CurrentUser)
+      .updateData({
+    'teamID': '',
+  });
+
+  return true;
+}
+
+Future<String> getTeamIDForCurrentUser() async {
+  String id = '';
+  var doc = await Firestore.instance
+      .collection('users')
+      .document(globals.CurrentUser)
+      .get();
+  if (doc.exists) {
+    id = doc.data['teamID'].toString();
+  }
+
+  return id;
+}
+
+Future<Team> loadTeamFromCloud() async {
+  print('loading team');
+  DateTime today =
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  String daykey = globals.getDayKey(today);
+  String month = new DateFormat("LLL yyyy").format(today);
+  Team t = new Team();
+  t.LastGotFromCloud = DateTime.now();
+  if (globals.TeamID != null && globals.TeamID != '') {
+    t.Name = (await Firestore.instance
+            .collection('teams')
+            .document(globals.TeamID)
+            .get())
+        .data['teamName'];
+
+    var docs = await Firestore.instance
+        .collection('teams')
+        .document(globals.TeamID)
+        .collection('members')
+        .getDocuments();
+
+    for (var doc in docs.documents) {
+      String userid = doc.documentID;
+      TeamMember tm = new TeamMember();
+      t.Members[userid] = tm;
+      tm.ID = userid;
+      tm.Role = doc.data['role'];
+      var d =
+          await Firestore.instance.collection('users').document(userid).get();
+      tm.Name = d.data['name'];
+
+      var s = await Firestore.instance
+          .collection('users')
+          .document(userid)
+          .collection('schedule')
+          .getDocuments();
+
+      List<ScheduleItem> sched = new List();
+      ScheduleItem item;
+      for (var si in s.documents) {
+        //print(d.documentID);
+        item = new ScheduleItem();
+        item.HabitCoin = new Coin(
+            si.data['coinName'],
+            IconData(int.parse(si.data['coinIcon'].toString()),
+                fontFamily: 'MaterialIcons'));
+        item.HabitCoin.CloudID = si.documentID;
+        List da = si.data['daysOfWeek'] as List<dynamic>;
+        List<String> days = da.map((day) => day.toString()).toList();
+
+        item.FirstDate = DateTime.fromMillisecondsSinceEpoch(
+            int.parse(si.data['firstDate'].toString()));
+        item.LastDate = DateTime.fromMillisecondsSinceEpoch(
+            int.parse(si.data['lastDate'].toString()));
+
+        item.DaysOfWeek = days;
+        sched.add(item);
+      }
+      tm.Schedule = new Schedule.withItems(sched);
+
+      tm.Months.Months[month] = await getMonthFromCloudForUser(month, userid);
+
+      tm.Days.days[daykey] = await getDayFromCloudForUser(today, userid);
+    }
+  }
+
+  return t;
 }

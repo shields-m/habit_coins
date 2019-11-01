@@ -25,6 +25,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+def keystoreProperties = new Properties()
+   def keystorePropertiesFile = rootProject.file('key.properties')
+   if (keystorePropertiesFile.exists()) {
+       keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+   }
+
 android {
     compileSdkVersion 28
 
@@ -41,7 +47,7 @@ android {
         applicationId "com.unlesscoaching.habit_coins"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode flutterVersionCode.toInteger()
+        versionCode 3
         versionName flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         //multiDexEnabled true
@@ -52,14 +58,24 @@ android {
 
     
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
-            
-        }
-    }
+      signingConfigs {
+       release {
+        //    keyAlias keystoreProperties['keyAlias']
+        //    keyPassword keystoreProperties['keyPassword']
+           
+           keyAlias 'key'
+           keyPassword 'PaLiZa:060914'
+           //storeFile file(keystoreProperties['storeFile'])
+           storeFile file('/key.jks')
+        //    storePassword keystoreProperties['storePassword']
+           storePassword 'PaLiZa:060914'
+       }
+   }
+   buildTypes {
+       release {
+           signingConfig signingConfigs.release
+       }
+   }
 }
 
 flutter {

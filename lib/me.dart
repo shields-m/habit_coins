@@ -228,6 +228,7 @@ class _MeState extends State<Me> {
   }
 
   void openCloudPage() async {
+    String name = await loadName();
     final LoginSignUpPage page = new LoginSignUpPage(auth: new Auth());
     bool loggedin = await Navigator.push(
       context,
@@ -246,10 +247,13 @@ class _MeState extends State<Me> {
                   FlatButton(
                     child: Text("This Device"),
                     onPressed: () {
-                      saveScheduleToCloud();
-                      saveAllDaysToCloud();
-                      saveAlltMonthsToCloud();
-                      Navigator.pop(context);
+                      saveScheduleToCloud().then((_) {
+                        saveAllDaysToCloud().then((_) {
+                          saveAlltMonthsToCloud().then((_) {
+                            Navigator.pop(context);
+                          });
+                        });
+                      });
                     },
                   ),
                   FlatButton(
@@ -272,9 +276,15 @@ class _MeState extends State<Me> {
             },
           );
         } else {
-          saveScheduleToCloud();
-          saveAllDaysToCloud();
-          saveAlltMonthsToCloud();
+          createUserInCloud(globals.CurrentUser, name).then((e) {
+             saveScheduleToCloud().then((_) {
+                        saveAllDaysToCloud().then((_) {
+                          saveAlltMonthsToCloud().then((_) {
+                           
+                          });
+                        });
+                      });
+          });
         }
       });
 
@@ -298,6 +308,7 @@ class _MeState extends State<Me> {
     String dateKey = globals.getDayKey(selectedDate);
 
     globals.days.days[dateKey] = await getDayFromCloud(selectedDate);
+
     globals.days.saveLocally();
 
     return true;

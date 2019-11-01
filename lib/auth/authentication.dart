@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habit_coins/globals.dart' as globals;
+import 'package:habit_coins/localData.dart';
 
 abstract class BaseAuth {
   Future<String> signIn(String email, String password);
@@ -38,7 +39,9 @@ class Auth implements BaseAuth {
   Future<String> signUp(String email, String password) async {
     var user = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
-    return user.user.uid;
+        
+        
+    return await signIn(email, password);
   }
 
   Future<FirebaseUser> getCurrentUser() async {

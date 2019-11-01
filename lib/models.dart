@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:habit_coins/schedule.dart' as schedule;
+
 import 'package:intl/intl.dart';
 
 import 'localData.dart';
@@ -303,5 +305,36 @@ class DayJsonObject {
   factory DayJsonObject.fromJson(Map<String, dynamic> json) {
     return new DayJsonObject(
         json['date'].toString(), Day.fromJson(json['day']));
+  }
+}
+
+class TeamMember {
+  String Name;
+  String Role;
+  String ID;
+
+
+  DayList Days;
+
+  MonthsList Months;
+
+  schedule.Schedule Schedule;
+
+  TeamMember(){
+    Days = new DayList();
+    Months = new MonthsList();
+    Schedule  = new schedule.Schedule();
+
+  }
+
+}
+
+class Team{
+  DateTime LastGotFromCloud;
+  String Name;
+  Map<String,TeamMember> Members;
+
+  Team(){Members = new Map();
+  LastGotFromCloud = DateTime.now().add(Duration(minutes: -150));
   }
 }

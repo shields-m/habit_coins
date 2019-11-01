@@ -41,6 +41,15 @@ class _SplashState extends State<Splash> {
             if (u != null) {
               globals.CurrentUser = u.uid;
               globals.UseCloudSync = true;
+              getTeamIDForCurrentUser().then((id) {
+                globals.TeamID = id;
+                if (id != 'null' && id != '') {
+                  
+                    globals.myTeam = new Team();
+                  
+                }
+              });
+
               loadScheduleFromCloud();
             }
           });

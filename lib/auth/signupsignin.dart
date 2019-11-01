@@ -49,15 +49,15 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           print('Signed in: $userId');
         } else {
           userId = await widget.auth.signUp(_email, _password);
-          widget.auth.sendEmailVerification();
-          _showVerifyEmailSentDialog();
+          //widget.auth.sendEmailVerification();
+          //_showVerifyEmailSentDialog();
           print('Signed up user: $userId');
         }
         setState(() {
           _isLoading = false;
         });
-
-        if (userId.length > 0 && userId != null && _formMode == FormMode.LOGIN) {
+//if (userId.length > 0 && userId != null && _formMode == FormMode.LOGIN) {
+        if (userId.length > 0 && userId != null) {
           //widget.onSignedIn();
           Navigator.pop(context,true);
         }
@@ -215,7 +215,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         child: CircleAvatar(
           backgroundColor: Color.fromARGB(255,53, 83, 165),
           radius: 60.0,
-          child: Image.asset('assets/images/unless.jpg'),
+          child: Image.asset('assets/images/habitcoins logo.png'),
         ),
       ),
     );

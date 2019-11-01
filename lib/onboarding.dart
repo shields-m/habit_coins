@@ -204,7 +204,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
-                  
                   setState(() {
                     _currentIndex = 2;
                   });
@@ -335,7 +334,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     si.HabitCoin = coin;
                     schedule.AddItem(si);
                     globals.mainSchedule = schedule;
-                    print(schedule.toJson().toString());
+                     globals.ScheduleLoaded = true;
+                    globals.DaysLoaded = true;
+                    globals.days = new DayList();
+
+                    Day today = new Day();
+                    DateTime selectedDate = DateTime(DateTime.now().year,
+                        DateTime.now().month, DateTime.now().day);
+
+                    today.coinsInJar = new List<Coin>();
+
+                    today.pendingCoins =
+                        globals.mainSchedule.getCoinsForDay(selectedDate);
+                    globals.days.days[globals.getDayKey(selectedDate)] = today;
                     _currentIndex = 4;
                   });
                 },
@@ -429,25 +440,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
                 onPressed: () {
                   saveName(txtName.text);
+                  saveOnboardingComplete();
                   if (!LoggedIn) {
                     saveSchedule(schedule);
-                  
 
-                  saveOnboardingComplete();
+                    globals.ScheduleLoaded = true;
+                    globals.DaysLoaded = true;
+                    globals.days = new DayList();
 
-                  globals.ScheduleLoaded = true;
-                  globals.days = new DayList();
-                  globals.DaysLoaded = true;
-                  Day today = new Day();
-                  DateTime selectedDate = DateTime(DateTime.now().year,
-                      DateTime.now().month, DateTime.now().day);
+                    Day today = new Day();
+                    DateTime selectedDate = DateTime(DateTime.now().year,
+                        DateTime.now().month, DateTime.now().day);
 
-                  today.coinsInJar = new List<Coin>();
+                    today.coinsInJar = new List<Coin>();
 
-                  today.pendingCoins =
-                      globals.mainSchedule.getCoinsForDay(selectedDate);
-                  globals.days.days[globals.getDayKey(selectedDate)] = today;
-
+                    today.pendingCoins =
+                        globals.mainSchedule.getCoinsForDay(selectedDate);
+                    globals.days.days[globals.getDayKey(selectedDate)] = today;
                   }
                   Navigator.pushAndRemoveUntil(
                       context,
@@ -758,10 +767,13 @@ class _CloudSyncState extends State<CloudSync> {
                   FlatButton(
                     child: Text("This Device"),
                     onPressed: () {
-                      saveScheduleToCloud();
-                      saveAllDaysToCloud();
-                      saveAlltMonthsToCloud();
-                      Navigator.pop(context);
+                       saveScheduleToCloud().then((_) {
+                        saveAllDaysToCloud().then((_) {
+                          saveAlltMonthsToCloud().then((_) {
+                            Navigator.pop(context);
+                          });
+                        });
+                      });
                     },
                   ),
                   FlatButton(
@@ -784,9 +796,15 @@ class _CloudSyncState extends State<CloudSync> {
             },
           );
         } else {
-          saveScheduleToCloud();
-          saveAllDaysToCloud();
-          saveAlltMonthsToCloud();
+          createUserInCloud(globals.CurrentUser, txtName.text).then((e) {
+             saveScheduleToCloud().then((_) {
+                        saveAllDaysToCloud().then((_) {
+                          saveAlltMonthsToCloud().then((_) {
+                           
+                          });
+                        });
+                      });
+          });
         }
       });
       setState(() {
@@ -812,6 +830,9 @@ class _CloudSyncState extends State<CloudSync> {
 
     globals.days.days[dateKey] = await getDayFromCloud(selectedDate);
     globals.days.saveLocally();
+
+    globals.ScheduleLoaded = true;
+    globals.DaysLoaded = true;
 
     return true;
   }

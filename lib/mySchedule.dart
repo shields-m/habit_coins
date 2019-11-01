@@ -62,7 +62,6 @@ class _MyScheduleState extends State<MySchedule> {
             ),
             // Container(
             //     padding: const EdgeInsets.all(6.0), child: Text(widget.title),)
-            
           ],
         ),
       ),
@@ -169,20 +168,28 @@ class _MyScheduleState extends State<MySchedule> {
       MaterialPageRoute(builder: (context) => page),
     );
     if (newCoin != null) {
-      setState(()  {
+      setState(() {
         DateTime today = DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day);
+        String month = DateFormat("LLL yyyy").format(today);
         String formattedDate = globals.getDayKey(today);
-        if(globals.UseCloudSync)
-          {
-             addCoinToCloud(newCoin).then((id){
-              newCoin.HabitCoin.CloudID = id;
-
-            });
-          }
+        if (globals.UseCloudSync) {
+          addCoinToCloud(newCoin).then((id) {
+            newCoin.HabitCoin.CloudID = id;
+          });
+        }
         globals.mainSchedule.AddItem(newCoin);
         if (newCoin.DaysOfWeek.contains(DateFormat('EEEE').format(today))) {
           globals.days.days[formattedDate].pendingCoins.add(newCoin.HabitCoin);
+          if (globals.monthsList.Months.containsKey(month)) {
+            globals.monthsList.Months[month].DaysCompleted
+                .remove(formattedDate);
+          }
+          if (globals.UseCloudSync) {
+            saveTodayToCloud();
+
+            globals.monthsList.saveLocally();
+          }
         }
         print(newCoin.HabitCoin.CloudID);
         globals.mainSchedule.saveLocally();
@@ -201,13 +208,25 @@ class _MyScheduleState extends State<MySchedule> {
       setState(() {
         DateTime today = DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day);
+        String month = DateFormat("LLL yyyy").format(today);
         String formattedDate = globals.getDayKey(today);
         if (newCoin.Delete) {
           globals.mainSchedule.RemoveItem(s);
           globals.days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
-          if(globals.UseCloudSync)
-          {
+          if (globals.UseCloudSync) {
             deleteCoinFromCloud(s.HabitCoin.CloudID);
+            saveTodayToCloud();
+            if (globals.monthsList.Months.containsKey(month)) {
+              globals.monthsList.Months[month].DaysCompleted
+                  .remove(formattedDate);
+
+              if (globals.days.days[formattedDate].complete()) {
+                globals.monthsList.Months[month].DaysCompleted
+                    .add(formattedDate);
+              }
+
+              globals.monthsList.saveLocally();
+            }
           }
         } else {
           globals.days.days[formattedDate].pendingCoins.remove(s.HabitCoin);
@@ -217,9 +236,20 @@ class _MyScheduleState extends State<MySchedule> {
             globals.days.days[formattedDate].pendingCoins
                 .add(newCoin.HabitCoin);
           }
-          if(globals.UseCloudSync)
-          {
+          if (globals.UseCloudSync) {
             updateCoinInCloud(s);
+
+            saveTodayToCloud();
+            if (globals.monthsList.Months.containsKey(month)) {
+              globals.monthsList.Months[month].DaysCompleted
+                  .remove(formattedDate);
+              if (globals.days.days[formattedDate].complete()) {
+                globals.monthsList.Months[month].DaysCompleted
+                    .add(formattedDate);
+              }
+
+              globals.monthsList.saveLocally();
+            }
           }
         }
 

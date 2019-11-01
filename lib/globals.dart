@@ -17,9 +17,13 @@ MonthsList monthsList = new MonthsList();
 
 DayList days = new DayList();
 
-bool UseCloudSync;
+bool UseCloudSync = false;
 
 String CurrentUser = '';
+
+String TeamID = '';
+
+Team myTeam;
 
 String getDayKey(DateTime dt)
 {
