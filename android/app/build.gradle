@@ -47,7 +47,7 @@ android {
         applicationId "com.unlesscoaching.habit_coins"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 3
+        versionCode 4
         versionName flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         //multiDexEnabled true
