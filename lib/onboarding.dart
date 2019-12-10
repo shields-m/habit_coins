@@ -154,7 +154,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             padding: EdgeInsets.symmetric(vertical: 50),
             child: Center(
               child: Text(
-                'Your Name',
+                'HabitCoins',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 36,
@@ -334,7 +334,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     si.HabitCoin = coin;
                     schedule.AddItem(si);
                     globals.mainSchedule = schedule;
-                     globals.ScheduleLoaded = true;
+                    globals.ScheduleLoaded = true;
                     globals.DaysLoaded = true;
                     globals.days = new DayList();
 
@@ -439,6 +439,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
+                  globals.ShowHelp = true;
                   saveName(txtName.text);
                   saveOnboardingComplete();
                   if (!LoggedIn) {
@@ -447,7 +448,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     globals.ScheduleLoaded = true;
                     globals.DaysLoaded = true;
                     globals.days = new DayList();
-
+                    
                     Day today = new Day();
                     DateTime selectedDate = DateTime(DateTime.now().year,
                         DateTime.now().month, DateTime.now().day);
@@ -570,6 +571,7 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
               ),
             ),
           ),
+          SizedBox(height: 15),
           Text(
             'Give it a name',
             textAlign: TextAlign.center,
@@ -577,7 +579,9 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
               fontSize: 22,
             ),
           ),
+          
           TextField(
+            decoration: InputDecoration(hintText: 'Enter HabitCoin Name', hintStyle: TextStyle(fontSize: 16,)),
             textCapitalization: TextCapitalization.words,
             controller: txtCoinName,
             style: TextStyle(
@@ -585,13 +589,14 @@ class _FirstCoinBuilderState extends State<FirstCoinBuilder> {
             ),
             textAlign: TextAlign.center,
           ),
-          Text(
-            'Select an icon',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-            ),
-          ),
+          SizedBox(height: 15),
+          // Text(
+          //   'Select an icon',
+          //   textAlign: TextAlign.center,
+          //   style: TextStyle(
+          //     fontSize: 22,
+          //   ),
+          // ),
           FlatButton(
             child: Text(
               'Select Icon',
@@ -636,6 +641,30 @@ class _selectWeekDaysState extends State<selectWeekDays> {
           style: TextStyle(
             fontSize: 22,
           ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            FlatButton(
+              onPressed: () {
+                setState(() {
+                  FocusScope.of(context).requestFocus(new FocusNode());
+
+                  daysOfWeek = [
+                    'Monday',
+                    'Tuesday',
+                    'Wednesday',
+                    'Thursday',
+                    'Friday',
+                    'Saturday',
+                    'Sunday'
+                  ];
+                });
+              },
+              child: Text('Select All Days',
+                  style: TextStyle(decoration: TextDecoration.underline)),
+            ),
+          ],
         ),
         CheckboxListTile(
           title: const Text('Monday'),
@@ -767,7 +796,7 @@ class _CloudSyncState extends State<CloudSync> {
                   FlatButton(
                     child: Text("This Device"),
                     onPressed: () {
-                       saveScheduleToCloud().then((_) {
+                      saveScheduleToCloud().then((_) {
                         saveAllDaysToCloud().then((_) {
                           saveAlltMonthsToCloud().then((_) {
                             Navigator.pop(context);
@@ -797,13 +826,11 @@ class _CloudSyncState extends State<CloudSync> {
           );
         } else {
           createUserInCloud(globals.CurrentUser, txtName.text).then((e) {
-             saveScheduleToCloud().then((_) {
-                        saveAllDaysToCloud().then((_) {
-                          saveAlltMonthsToCloud().then((_) {
-                           
-                          });
-                        });
-                      });
+            saveScheduleToCloud().then((_) {
+              saveAllDaysToCloud().then((_) {
+                saveAlltMonthsToCloud().then((_) {});
+              });
+            });
           });
         }
       });

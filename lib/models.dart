@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:habit_coins/schedule.dart' as schedule;
+import 'package:habit_coins/schedule.dart';
 
 import 'package:intl/intl.dart';
 
@@ -313,28 +314,61 @@ class TeamMember {
   String Role;
   String ID;
 
-
   DayList Days;
 
   MonthsList Months;
 
   schedule.Schedule Schedule;
 
-  TeamMember(){
+  TeamMember() {
     Days = new DayList();
     Months = new MonthsList();
-    Schedule  = new schedule.Schedule();
+    Schedule = new schedule.Schedule();
+  }
+}
 
+class UserDetails {
+  String ID;
+  String TeamID;
+  bool isUnless;
+  bool shareWithUnless;
+
+  UserDetails() {
+    ID = '';
+    TeamID = '';
+    isUnless = false;
+    shareWithUnless = false;
+  }
+}
+
+class Person
+{
+  String id;
+  String name;
+  Schedule schedule;
+
+  MonthsList months;
+
+  DayList days;
+
+  DateTime lastGotFromCloud;
+
+  Person()
+  {
+    lastGotFromCloud = DateTime(1999);
   }
 
 }
 
-class Team{
+class Team {
   DateTime LastGotFromCloud;
   String Name;
-  Map<String,TeamMember> Members;
+  bool shareWithUnless;
+  Map<String, TeamMember> Members;
 
-  Team(){Members = new Map();
-  LastGotFromCloud = DateTime.now().add(Duration(minutes: -150));
+  Team() {
+    Members = new Map();
+    LastGotFromCloud = DateTime.now().add(Duration(minutes: -150));
+    shareWithUnless = false;
   }
 }

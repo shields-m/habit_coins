@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_coins/models.dart';
 import 'package:intl/intl.dart';
 import 'package:habit_coins/globals.dart' as globals;
 import 'package:habit_coins/localData.dart';
@@ -9,8 +10,17 @@ class Calendar extends StatefulWidget {
   DateTime _currentMonth;
   String _currentMonthName;
   DateTime _lastDayOfCurrentMonth;
+  bool isMe;
+  String UserID;
 
   Calendar() {
+    isMe = true;
+    sortOutDates();
+  }
+
+  Calendar.forOtherUser(String user) {
+    isMe = user == globals.CurrentUser;
+    UserID = user;
     sortOutDates();
   }
 
@@ -37,15 +47,22 @@ class _CalendarState extends State<Calendar> {
 
       DateTime ldocm =
           DateTime(cm.year, cm.month + 1, cm.day).add(Duration(days: -1));
-
-      if (!globals.monthsList.Months.containsKey(cmname)) {
-        if (globals.UseCloudSync) {
-          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      if (this.widget.isMe) {
+        if (!globals.monthsList.Months.containsKey(cmname)) {
+          if (globals.UseCloudSync) {
+            globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+          }
+        } else {
+          if (globals.monthsList.Months[cmname].lastGotFromCloud
+              .isBefore(DateTime.now().add(Duration(days: -1)))) {
+            globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+          }
         }
       } else {
-        if (globals.monthsList.Months[cmname].lastGotFromCloud
-            .isBefore(DateTime.now().add(Duration(days: -1)))) {
-          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        if (!globals.people[this.widget.UserID].months.Months
+            .containsKey(cmname)) {
+          globals.people[this.widget.UserID].months.Months[cmname] =
+              await getMonthFromCloudForUser(cmname, this.widget.UserID);
         }
       }
 
@@ -54,10 +71,8 @@ class _CalendarState extends State<Calendar> {
         this.widget._currentMonthName = cmname;
         this.widget._lastDayOfCurrentMonth = ldocm;
       });
-    }
-    else
-    {
-Fluttertoast.showToast(
+    } else {
+      Fluttertoast.showToast(
           msg: "The future is currently unknown",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
@@ -65,7 +80,6 @@ Fluttertoast.showToast(
           backgroundColor: Colors.black.withOpacity(0.8),
           textColor: Colors.white,
           fontSize: 16.0);
-
     }
   }
 
@@ -77,14 +91,22 @@ Fluttertoast.showToast(
     DateTime ldocm =
         DateTime(cm.year, cm.month + 1, cm.day).add(Duration(days: -1));
 
-    if (!globals.monthsList.Months.containsKey(cmname)) {
-      if (globals.UseCloudSync) {
-        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+    if (this.widget.isMe) {
+      if (!globals.monthsList.Months.containsKey(cmname)) {
+        if (globals.UseCloudSync) {
+          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        }
+      } else {
+        if (globals.monthsList.Months[cmname].lastGotFromCloud
+            .isBefore(DateTime.now().add(Duration(days: -1)))) {
+          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        }
       }
     } else {
-      if (globals.monthsList.Months[cmname].lastGotFromCloud
-          .isBefore(DateTime.now().add(Duration(days: -1)))) {
-        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      if (!globals.people[this.widget.UserID].months.Months
+          .containsKey(cmname)) {
+        globals.people[this.widget.UserID].months.Months[cmname] =
+              await getMonthFromCloudForUser(cmname, this.widget.UserID);
       }
     }
 
@@ -101,11 +123,163 @@ Fluttertoast.showToast(
         this.widget._currentMonth.month, dayOfMonth));
 
     //print(dt);
-    return globals.monthsList.Months
-            .containsKey(this.widget._currentMonthName) &&
-        globals.monthsList.Months[this.widget._currentMonthName].DaysCompleted
-            .contains(dt);
+    if (this.widget.isMe) {
+      return globals.monthsList.Months
+              .containsKey(this.widget._currentMonthName) &&
+          globals.monthsList.Months[this.widget._currentMonthName].DaysCompleted
+              .contains(dt);
+    } else {
+      return globals.people[this.widget.UserID].months.Months
+              .containsKey(this.widget._currentMonthName) &&
+          globals.people[this.widget.UserID].months
+              .Months[this.widget._currentMonthName].DaysCompleted
+              .contains(dt);
+    }
     //return x;
+  }
+
+  void showDay(int dayOfMonth) async {
+    DateTime date = DateTime(this.widget._currentMonth.year,
+        this.widget._currentMonth.month, dayOfMonth);
+    String dt = globals.getDayKey(date);
+
+    print(dt);
+
+    Day d;
+    if (this.widget.isMe) {
+      if (globals.UseCloudSync) {
+        if (!globals.days.days.containsKey(dt)) {
+          globals.days.days[dt] = await getDayFromCloud(date);
+        }
+      }
+      d = globals.days.days[dt];
+    } else {
+      if (!globals.people[this.widget.UserID].days.days.containsKey(dt)) {
+        globals.people[this.widget.UserID].days.days[dt] =
+            await getDayFromCloudForUser(date, this.widget.UserID);
+      }
+
+      d = globals.people[this.widget.UserID].days.days[dt];
+    }
+
+    if (d.totalCoinCount() > 0) {
+      showDialog(
+        context: context,
+        
+        builder: (BuildContext context) {
+          // return object of type Dialog
+          return AlertDialog(
+            title: Text(dt.toString()),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Close"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+            content: Container(
+              // Specify some width
+              width: MediaQuery.of(context).size.width * .8,
+              child: ListView(
+                shrinkWrap: true,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child:Center(
+                    child: Text('HabitCoins In Jar'),
+                  ),),
+                  GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 4,
+                    children: d.coinsInJar
+                        .map(
+                          (coin) => Container(
+                            margin: EdgeInsets.all(3),
+                            width: 90.0,
+                            height: 90.0,
+                            decoration: new BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black54,
+                                  spreadRadius: 1,
+                                  blurRadius: 2,
+                                  offset: Offset(0.0, 0),
+                                )
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                coin.Icon,
+                                size: 36,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child:Center(
+                    child: Text('Uncompleted HabitCoins'),
+                  ),),
+                  GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 4,
+                    children: d.pendingCoins
+                        .map(
+                          (coin) => Container(
+                            margin: EdgeInsets.all(3),
+                            width: 90.0,
+                            height: 90.0,
+                            decoration: new BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black54,
+                                  spreadRadius: 1,
+                                  blurRadius: 2,
+                                  offset: Offset(0.0, 0),
+                                )
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                coin.Icon,
+                                size: 36,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      Fluttertoast.showToast(
+          msg: "No HabitCoin Data for selected day",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.black.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
   }
 
   void subtractMonth() async {
@@ -117,14 +291,22 @@ Fluttertoast.showToast(
     DateTime ldocm =
         DateTime(cm.year, cm.month + 1, cm.day).add(Duration(days: -1));
 
-    if (!globals.monthsList.Months.containsKey(cmname)) {
-      if (globals.UseCloudSync) {
-        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+    if (this.widget.isMe) {
+      if (!globals.monthsList.Months.containsKey(cmname)) {
+        if (globals.UseCloudSync) {
+          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        }
+      } else {
+        if (globals.monthsList.Months[cmname].lastGotFromCloud
+            .isBefore(DateTime.now().add(Duration(days: -1)))) {
+          globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+        }
       }
     } else {
-      if (globals.monthsList.Months[cmname].lastGotFromCloud
-          .isBefore(DateTime.now().add(Duration(days: -1)))) {
-        globals.monthsList.Months[cmname] = await getMonthFromCloud(cmname);
+      if (!globals.people[this.widget.UserID].months.Months
+          .containsKey(cmname)) {
+        globals.people[this.widget.UserID].months.Months[cmname] =
+              await getMonthFromCloudForUser(cmname, this.widget.UserID);
       }
     }
 
@@ -176,64 +358,73 @@ Fluttertoast.showToast(
           ],
         ),
         SwipeDetector(
+          swipeConfiguration: SwipeConfiguration(
+            verticalSwipeMinVelocity: 9999,
+            verticalSwipeMinDisplacement: 9999,
+            verticalSwipeMaxWidthThreshold: 9999,
+          ),
+          onSwipeUp: () => null,
+          onSwipeDown: () => null,
           onSwipeLeft: () => addMonth(),
           onSwipeRight: () => subtractMonth(),
-          child:
-        GridView.count(
-          shrinkWrap: true,
-          physics: ScrollPhysics(),
-          crossAxisCount: 7,
-          children: List.generate(
-              this.widget._lastDayOfCurrentMonth.day + (offset), (index) {
-            return Container(
-              padding: EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: index < 7
-                    ? Color.fromARGB(255, 53, 83, 165)
-                    : DateTime(
-                                this.widget._currentMonth.year,
-                                this.widget._currentMonth.month,
-                                ((index) - (offset) + 1)) ==
-                            today
-                        ? Color.fromARGB(128, 53, 83, 165)
-                        : Colors.white,
-                border: Border.all(
-                  color: Color.fromARGB(128, 53, 83, 165),
-                  width: 1,
-                ),
-                //borderRadius: BorderRadius.circular(16.0),
-              ),
-              child: index < 7
-                  ? Center(
-                      child: Text(
-                        DaysOfWeek[index],
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    )
-                  : (index) >= (offset)
-                      ? Stack(
-                          children: <Widget>[
-                            DayCompleted(((index) - (offset) + 1))
-                                ? Container(
-                                    padding: EdgeInsets.all(3),
-                                    child: Image.asset(
-                                      'assets/images/thumbsup-small.png',
-                                      fit: BoxFit.fitWidth,
-                                    ),
-                                  )
-                                : Container(),
-                            Text(
-                              ((index) - (offset) + 1).toString(),
-                              style: TextStyle(
-                                backgroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
+          child: GridView.count(
+            shrinkWrap: true,
+            physics: ScrollPhysics(),
+            crossAxisCount: 7,
+            children: List.generate(
+                this.widget._lastDayOfCurrentMonth.day + (offset), (index) {
+              return GestureDetector(
+                onTap: () => showDay(((index) - (offset) + 1)),
+                child: Container(
+                  padding: EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: index < 7
+                        ? Color.fromARGB(255, 53, 83, 165)
+                        : DateTime(
+                                    this.widget._currentMonth.year,
+                                    this.widget._currentMonth.month,
+                                    ((index) - (offset) + 1)) ==
+                                today
+                            ? Color.fromARGB(128, 53, 83, 165)
+                            : Colors.white,
+                    border: Border.all(
+                      color: Color.fromARGB(128, 53, 83, 165),
+                      width: 1,
+                    ),
+                    //borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  child: index < 7
+                      ? Center(
+                          child: Text(
+                            DaysOfWeek[index],
+                            style: TextStyle(color: Colors.white),
+                          ),
                         )
-                      : Container(),
-            );
-          }),
-        ),
+                      : (index) >= (offset)
+                          ? Stack(
+                              children: <Widget>[
+                                DayCompleted(((index) - (offset) + 1))
+                                    ? Container(
+                                        padding: EdgeInsets.all(3),
+                                        child: Image.asset(
+                                          'assets/images/thumbsup-small.png',
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                      )
+                                    : Container(),
+                                Text(
+                                  ((index) - (offset) + 1).toString(),
+                                  style: TextStyle(
+                                    backgroundColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Container(),
+                ),
+              );
+            }),
+          ),
         ),
       ],
     );

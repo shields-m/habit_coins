@@ -89,6 +89,44 @@ Future<bool> loadScheduleFromCloud() async {
   return loaded;
 }
 
+Future<Schedule> loadScheduleFromCloudForUser(String id) async {
+  Schedule schedule = new Schedule();
+
+  await Firestore.instance
+      .collection('users')
+      .document(id)
+      .collection('schedule')
+      .getDocuments()
+      .then((s) {
+    List<ScheduleItem> sched = new List();
+    ScheduleItem item;
+    s.documents.forEach((d) {
+      print(d.documentID);
+      item = new ScheduleItem();
+      item.HabitCoin = new Coin(
+          d.data['coinName'],
+          IconData(int.parse(d.data['coinIcon'].toString()),
+              fontFamily: 'MaterialIcons'));
+      item.HabitCoin.CloudID = d.documentID;
+      List da = d.data['daysOfWeek'] as List<dynamic>;
+      List<String> days = da.map((day) => day.toString()).toList();
+
+      item.FirstDate = DateTime.fromMillisecondsSinceEpoch(
+          int.parse(d.data['firstDate'].toString()));
+      item.LastDate = DateTime.fromMillisecondsSinceEpoch(
+          int.parse(d.data['lastDate'].toString()));
+
+      item.DaysOfWeek = days;
+      sched.add(item);
+    });
+    print(sched);
+    schedule = new Schedule.withItems(sched);
+    
+  });
+
+  return schedule;
+}
+
 Future<bool> saveTodayToCloud() async {
   String todayKey = globals.getDayKey(DateTime.now());
   Map<String, dynamic> today =
@@ -166,7 +204,8 @@ Future<Day> getDayFromCloudForUser(DateTime date, String user) async {
       d = new Day();
       d.coinsInJar = new List<Coin>();
 
-      d.pendingCoins = globals.mainSchedule.getCoinsForDay(date);
+      //d.pendingCoins = globals.people[user].schedule.getCoinsForDay(date);
+      d.pendingCoins = new List();
     }
   });
   d.lastGotFromCloud = DateTime.now();
@@ -393,10 +432,12 @@ Future<bool> updateCoinInCloud(ScheduleItem item) async {
 }
 
 Future<bool> createUserInCloud(String id, String name) async {
-  await Firestore.instance
-      .collection('users')
-      .document(id)
-      .setData({'name': name});
+  await Firestore.instance.collection('users').document(id).setData({
+    'name': name,
+    'isUnless': false,
+    'teamID': '',
+    'shareWithUnless': false
+  });
 }
 
 Future<File> saveName(String name) async {
@@ -406,9 +447,17 @@ Future<File> saveName(String name) async {
     await Firestore.instance
         .collection('users')
         .document(globals.CurrentUser)
-        .setData({'name': name});
+        .updateData({'name': name});
   }
   return file.writeAsString(name);
+}
+
+Future<void> setShareWithUnlessForCurrentUser(bool value) async {
+  await Firestore.instance
+      .collection('users')
+      .document(globals.CurrentUser)
+      .updateData({'shareWithUnless': value});
+  return null;
 }
 
 Future<File> saveOnboardingComplete() async {
@@ -578,7 +627,37 @@ Future<bool> doesTeamExist(String teamID) async {
   return exists;
 }
 
-Future<bool> addCurrentUserToTeam(String teamID) async {
+Future<Person> loadPerson(String id) async {
+  Person p = new Person();
+  p.id = id;
+  p.lastGotFromCloud = DateTime.now();
+  var db = Firestore.instance;
+
+  var user = await db.collection('users').document(id).get();
+  if (user.exists) {
+    p.name = user.data['name'];
+    p.schedule = await loadScheduleFromCloudForUser(id);
+    print(p.schedule.Items);
+    p.days = new DayList();
+    p.days.days[globals.getDayKey(DateTime.now())] =
+        await getDayFromCloudForUser(DateTime.now(), id);
+    String month = new DateFormat("LLL yyyy").format(DateTime.now());
+    p.months = new MonthsList();
+    p.months.Months[month] = await getMonthFromCloudForUser(month, id);
+  }
+
+  return p;
+}
+
+Future<bool> doesTeamShareWithUnless(String teamID) async {
+  bool share = false;
+  var doc = await Firestore.instance.collection('teams').document(teamID).get();
+  share = doc.data['shareWithUnless'].toString().toLowerCase() == 'true';
+  return share;
+}
+
+Future<bool> addCurrentUserToTeam(String teamID, bool allowSharing) async {
+  //TODO: Transaction for this
   await Firestore.instance
       .collection('teams')
       .document(teamID)
@@ -594,6 +673,7 @@ Future<bool> addCurrentUserToTeam(String teamID) async {
       .document(globals.CurrentUser)
       .updateData({
     'teamID': teamID,
+    'shareWithUnless': allowSharing,
   });
 
   return true;
@@ -630,6 +710,24 @@ Future<String> getTeamIDForCurrentUser() async {
   return id;
 }
 
+Future<UserDetails> getUserDetailsForCurrentUser() async {
+  print('User : ' + globals.CurrentUser);
+  UserDetails d = new UserDetails();
+  var doc = await Firestore.instance
+      .collection('users')
+      .document(globals.CurrentUser)
+      .get();
+  if (doc.exists) {
+    print(doc.data);
+    d.TeamID = doc.data['teamID'].toString();
+    d.isUnless = doc.data['isUnless'].toString().toLowerCase() == 'true';
+    d.shareWithUnless =
+        doc.data['shareWithUnless'].toString().toLowerCase() == 'true';
+  }
+  print('Team : ' + d.TeamID);
+  return d;
+}
+
 Future<Team> loadTeamFromCloud() async {
   print('loading team');
   DateTime today =
@@ -638,16 +736,19 @@ Future<Team> loadTeamFromCloud() async {
   String month = new DateFormat("LLL yyyy").format(today);
   Team t = new Team();
   t.LastGotFromCloud = DateTime.now();
-  if (globals.TeamID != null && globals.TeamID != '') {
-    t.Name = (await Firestore.instance
+  if (globals.userDetails.TeamID != null && globals.userDetails.TeamID != '') {
+    var teamdata = (await Firestore.instance
             .collection('teams')
-            .document(globals.TeamID)
+            .document(globals.userDetails.TeamID)
             .get())
-        .data['teamName'];
+        .data;
+    t.Name = teamdata['teamName'];
+    t.shareWithUnless =
+        teamdata['shareWithUnless'].toString().toLowerCase() == 'true';
 
     var docs = await Firestore.instance
         .collection('teams')
-        .document(globals.TeamID)
+        .document(globals.userDetails.TeamID)
         .collection('members')
         .getDocuments();
 
@@ -661,36 +762,36 @@ Future<Team> loadTeamFromCloud() async {
           await Firestore.instance.collection('users').document(userid).get();
       tm.Name = d.data['name'];
 
-      var s = await Firestore.instance
-          .collection('users')
-          .document(userid)
-          .collection('schedule')
-          .getDocuments();
+      // var s = await Firestore.instance
+      //     .collection('users')
+      //     .document(userid)
+      //     .collection('schedule')
+      //     .getDocuments();
 
-      List<ScheduleItem> sched = new List();
-      ScheduleItem item;
-      for (var si in s.documents) {
-        //print(d.documentID);
-        item = new ScheduleItem();
-        item.HabitCoin = new Coin(
-            si.data['coinName'],
-            IconData(int.parse(si.data['coinIcon'].toString()),
-                fontFamily: 'MaterialIcons'));
-        item.HabitCoin.CloudID = si.documentID;
-        List da = si.data['daysOfWeek'] as List<dynamic>;
-        List<String> days = da.map((day) => day.toString()).toList();
+      // List<ScheduleItem> sched = new List();
+      // ScheduleItem item;
+      // for (var si in s.documents) {
+      //   //print(d.documentID);
+      //   item = new ScheduleItem();
+      //   item.HabitCoin = new Coin(
+      //       si.data['coinName'],
+      //       IconData(int.parse(si.data['coinIcon'].toString()),
+      //           fontFamily: 'MaterialIcons'));
+      //   item.HabitCoin.CloudID = si.documentID;
+      //   List da = si.data['daysOfWeek'] as List<dynamic>;
+      //   List<String> days = da.map((day) => day.toString()).toList();
 
-        item.FirstDate = DateTime.fromMillisecondsSinceEpoch(
-            int.parse(si.data['firstDate'].toString()));
-        item.LastDate = DateTime.fromMillisecondsSinceEpoch(
-            int.parse(si.data['lastDate'].toString()));
+      //   item.FirstDate = DateTime.fromMillisecondsSinceEpoch(
+      //       int.parse(si.data['firstDate'].toString()));
+      //   item.LastDate = DateTime.fromMillisecondsSinceEpoch(
+      //       int.parse(si.data['lastDate'].toString()));
 
-        item.DaysOfWeek = days;
-        sched.add(item);
-      }
-      tm.Schedule = new Schedule.withItems(sched);
+      //   item.DaysOfWeek = days;
+      //   sched.add(item);
+      // }
+      // tm.Schedule = new Schedule.withItems(sched);
 
-      tm.Months.Months[month] = await getMonthFromCloudForUser(month, userid);
+      //tm.Months.Months[month] = await getMonthFromCloudForUser(month, userid);
 
       tm.Days.days[daykey] = await getDayFromCloudForUser(today, userid);
     }

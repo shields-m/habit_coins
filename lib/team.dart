@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_coins/globals.dart' as globals;
+import 'package:habit_coins/viewPerson.dart';
 import 'package:intl/intl.dart';
 import 'localData.dart';
 
@@ -38,7 +39,7 @@ class _TeamState extends State<Team> {
   }
 
   Widget buildTeam() {
-    print(globals.TeamID);
+    print(globals.userDetails.TeamID);
     if (!globals.UseCloudSync) {
       return Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
@@ -52,11 +53,25 @@ class _TeamState extends State<Team> {
             ),
           ));
     } else {
-      if (globals.TeamID == '' || globals.TeamID == 'null')
+      if (globals.userDetails.TeamID == '' ||
+          globals.userDetails.TeamID == 'null')
         return buildJoinTeam();
       else
         return buildTeamList();
     }
+  }
+
+  Future<void> refreshTeam() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    loadTeamFromCloud().then((t) {
+      globals.myTeam = t;
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 
   Widget buildTeamList() {
@@ -101,131 +116,75 @@ class _TeamState extends State<Team> {
               ? Image.asset(
                   'assets/images/thumbsup-small.png',
                   fit: BoxFit.fitHeight,
-                  height:50,
+                  height: 50,
                 )
               : Text(''),
-          onTap: () {},
+          onTap: () {
+            final ViewPerson page = new ViewPerson(member.ID);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => page),
+            );
+          },
         ),
       ));
     });
 
-    allMembers.add(Container(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Color.fromARGB(128, 53, 83, 165),
-            width: 1,
-          ),
-        ),
-        //borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: ListTile(
-        title: Text('Refresh Team',
-            style: TextStyle(
-              fontSize: 20,
-            )),
-        subtitle: Text('Get the latest data for your team'),
-        trailing: Icon(Icons.refresh),
-        onTap: () {
-          setState(() {
-            _isLoading = true;
-          });
+    // allMembers.add(Container(
+    //   decoration: BoxDecoration(
+    //     border: Border(
+    //       top: BorderSide(
+    //         color: Color.fromARGB(128, 53, 83, 165),
+    //         width: 1,
+    //       ),
+    //     ),
+    //     //borderRadius: BorderRadius.circular(16.0),
+    //   ),
+    //   child: ListTile(
+    //     title: Text('Refresh Team',
+    //         style: TextStyle(
+    //           fontSize: 20,
+    //         )),
+    //     subtitle: Text('Get the latest data for your team'),
+    //     trailing: Icon(Icons.refresh),
+    //     onTap: () {
+    //       refreshTeam();
+    //     },
+    //   ),
+    // ));
 
-          loadTeamFromCloud().then((t) {
-            globals.myTeam = t;
-            setState(() {
-              _isLoading = false;
-            });
-          });
-        },
-      ),
-    ));
-
-    allMembers.add(Container(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Color.fromARGB(128, 53, 83, 165),
-            width: 1,
-          ),
-        ),
-        //borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: ListTile(
-        title: Text('Leave Team',
-            style: TextStyle(
-              fontSize: 20,
-            )),
-        subtitle: Text('Stop sharing your HabitCoins wit the team'),
-        trailing: Icon(Icons.directions_run),
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              // return object of type Dialog
-              return AlertDialog(
-                title: Text("Leave Team?"),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text("Yes"),
-                    onPressed: () {
-                      leaveTeam(globals.TeamID).then((_) {
-                        Navigator.pop(context);
-                        setState(() {
-                          globals.TeamID = '';
-                        });
-                      });
-                    },
-                  ),
-                  FlatButton(
-                    child: Text("No"),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  )
-                ],
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text('Are you sure you want to leave this team?')
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
-    ));
-
-    return ListView(
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 50),
-          child: Center(
-            child: Text(_isLoading ? 'Loading Team...' :
-              globals.myTeam.Name,
-              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ),
-        Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Color.fromARGB(128, 53, 83, 165),
-                  width: 1,
-                ),
+    return new RefreshIndicator(
+      onRefresh: refreshTeam,
+      child: ListView(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 50),
+            child: Center(
+              child: Text(
+                _isLoading ? 'Loading Team...' : globals.myTeam.Name,
+                style: TextStyle(fontSize: 36, fontWeight: FontWeight.w700),
               ),
-              //borderRadius: BorderRadius.circular(16.0),
             ),
-            child: Column(
-              children: !_isLoading
-                  ? allMembers
-                  : <Widget>[
-                      LinearProgressIndicator(),
-                    ],
-            )),
-      ],
+          ),
+          Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Color.fromARGB(128, 53, 83, 165),
+                    width: 1,
+                  ),
+                ),
+                //borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: Column(
+                children: !_isLoading
+                    ? allMembers
+                    : <Widget>[
+                        LinearProgressIndicator(),
+                      ],
+              )),
+        ],
+      ),
     );
   }
 
@@ -328,20 +287,88 @@ class _TeamState extends State<Team> {
       _error = 'You must enter a Team ID';
     } else {
       if (await doesTeamExist(teamID)) {
-        await addCurrentUserToTeam(teamID);
-        globals.TeamID = teamID;
-        await loadTeamFromCloud().then((t) {
-          globals.myTeam = t;
-        });
+        if (await doesTeamShareWithUnless(teamID)) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              // return object of type Dialog
+              return AlertDialog(
+                title: Text("Share Data With Unless?"),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Yes"),
+                    onPressed: () async {
+                      await addCurrentUserToTeam(teamID, true);
+                      globals.userDetails.TeamID = teamID;
+                      await loadTeamFromCloud().then((t) {
+                        globals.myTeam = t;
+                      });
+                      Navigator.pop(context);
+
+                      Future.delayed(Duration(seconds: 1)).then((n) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      });
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("No"),
+                    onPressed: () async {
+                      await addCurrentUserToTeam(teamID, false);
+                      globals.userDetails.TeamID = teamID;
+                      await loadTeamFromCloud().then((t) {
+                        globals.myTeam = t;
+                      });
+                      Navigator.pop(context);
+
+                      Future.delayed(Duration(seconds: 1)).then((n) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      });
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("Cancel"),
+                    onPressed: () {
+                      Navigator.pop(context);
+
+                      Future.delayed(Duration(seconds: 0)).then((n) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      });
+                    },
+                  )
+                ],
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                        'The team you are trying to join has opted to share HabitCoin data with Unless Ltd. Would you like your HabitCoin data to be accessible by Unless Ltd?'),
+                    Text('You can view the privacy policy by clicking here: '),
+                  ],
+                ),
+              );
+            },
+          );
+        } else {
+          await addCurrentUserToTeam(teamID, false);
+          globals.userDetails.TeamID = teamID;
+          await loadTeamFromCloud().then((t) {
+            globals.myTeam = t;
+          });
+
+          Future.delayed(Duration(seconds: 1)).then((n) {
+            setState(() {
+              _isLoading = false;
+            });
+          });
+        }
       } else {
         _error = 'The Team ID you entered is invalid';
       }
     }
-
-    Future.delayed(Duration(seconds: 1)).then((n) {
-      setState(() {
-        _isLoading = false;
-      });
-    });
   }
 }

@@ -59,7 +59,6 @@ class _AddCoinState extends State<AddCoin> {
             ),
             // Container(
             //     padding: const EdgeInsets.all(6.0), child: Text(widget.title),)
-            
           ],
         ),
       ),
@@ -173,11 +172,37 @@ class _AddCoinState extends State<AddCoin> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    'Days Of Week:',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        'Days Of Week:',
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
+                      ),
+                      FlatButton(
+                        onPressed: () {
+                          setState(() {
+                            FocusScope.of(context)
+                                .requestFocus(new FocusNode());
+
+                            this.widget.Days = [
+                              'Monday',
+                              'Tuesday',
+                              'Wednesday',
+                              'Thursday',
+                              'Friday',
+                              'Saturday',
+                              'Sunday'
+                            ];
+                          });
+                        },
+                        child: Text('Select All Days',
+                            style: TextStyle(
+                                decoration: TextDecoration.underline)),
+                      ),
+                    ],
                   ),
                   CheckboxListTile(
                     title: const Text('Monday'),

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:habit_coins/globals.dart' as globals;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:overlay_container/overlay_container.dart';
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
 DateTime selectedDate;
@@ -19,7 +20,11 @@ DateTime _currentMonth;
 String _currentMonthName;
 
 class MyCoins extends StatefulWidget {
-  MyCoins() {
+  // bool ShowHelp;
+  final Function function;
+
+  MyCoins({Key key, this.function}) : super(key: key) {
+    //ShowHelp = false;
     selectedDate =
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     isFuture = false;
@@ -32,10 +37,14 @@ class MyCoins extends StatefulWidget {
   Jar jar = new Jar.fromDay(globals.days.days[globals.getDayKey(DateTime(
       DateTime.now().year, DateTime.now().month, DateTime.now().day))]);
 
-  _MyCoinsState createState() => _MyCoinsState();
+  MyCoinsState createState() => MyCoinsState();
 }
 
-class _MyCoinsState extends State<MyCoins> {
+class MyCoinsState extends State<MyCoins> {
+  void refresh() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     // fileWriter w = new fileWriter();
@@ -59,35 +68,155 @@ class _MyCoinsState extends State<MyCoins> {
                   onTap: () {
                     setDate(selectedDate.add(new Duration(days: -1)));
                   },
-                  child: new Icon(
-                    Icons.keyboard_arrow_left,
-                    size: 32,
+                  child: Container(
+                    margin: EdgeInsets.all(3),
+                    width: 45.0,
+                    height: 45.0,
+                    decoration: new BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black54,
+                          spreadRadius: 1,
+                          blurRadius: 1,
+                          offset: Offset(0.0, 0),
+                        )
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.keyboard_arrow_left,
+                        size: 38,
+                      ),
+                    ),
                   ),
                 ),
+                
                 new GestureDetector(
                   onTap: () {
                     _selectDate();
                   },
-                  child: new Text(
+                  child: Column(
+                    children:<Widget>[
+                      OverlayContainer(
+                  show: globals.ShowHelp ,
+                  // Let's position this overlay to the right of the button.
+                  position: OverlayContainerPosition(-100, 0),
+                  // The content inside the overlay.
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.only(top: 0),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Color.fromARGB(255, 53, 83, 165),
+                        width: 1,
+                      ),
+                      borderRadius: new BorderRadius.all(
+                        Radius.circular(8),
+                      ),
+                      color: Colors.white,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Color.fromARGB(128, 53, 83, 165),
+                          blurRadius: 2,
+                          spreadRadius: 4,
+                        )
+                      ],
+                    ),
+                    child: Text(
+                        "Use the left and right arrown\nto move through the dates."),
+                  ),
+                ),
+                    new Text(
                     new DateFormat("E dd LLL yyyy").format(selectedDate),
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-                  ),
+                  ),],),
                 ),
                 new GestureDetector(
                   onTap: () {
                     setDate(selectedDate.add(new Duration(hours: 26)));
                   },
-                  child: new Icon(
-                    Icons.keyboard_arrow_right,
-                    size: 32,
+                  child: Container(
+                    margin: EdgeInsets.all(3),
+                    width: 45.0,
+                    height: 45.0,
+                    decoration: new BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black54,
+                          spreadRadius: 1,
+                          blurRadius: 1,
+                          offset: Offset(0.0, 0),
+                        )
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.keyboard_arrow_right,
+                        size: 38,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          // IconButton(
+          //   icon: Icon(Icons.help_outline),
+          //   onPressed: () {
+          //     setState(() {
+          //       globals.ShowHelp = !globals.ShowHelp;
+          //     });
+          //   },
+          // ),
           CoinRow(
             _coinRowStateKey,
             coins,
+          ),
+          OverlayContainer(
+            show: globals.ShowHelp,
+            // Let's position this overlay to the right of the button.
+            position: OverlayContainerPosition(
+              // Left position.
+              120,
+              // Bottom position.
+              110,
+            ),
+            // The content inside the overlay.
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(top: 0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Color.fromARGB(255, 53, 83, 165),
+                  width: 1,
+                ),
+                borderRadius: new BorderRadius.all(
+                  Radius.circular(8),
+                ),
+                color: Colors.white,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Color.fromARGB(128, 53, 83, 165),
+                    blurRadius: 2,
+                    spreadRadius: 4,
+                  )
+                ],
+              ),
+              child: Text(
+                  "Press and hold a HabitCoin\nto pick it up. Scroll left and\nright to see all of your HabitCoins."),
+            ),
           ),
           new Expanded(child: new JarWidget(this.widget.jar)),
         ],
@@ -124,7 +253,7 @@ class _MyCoinsState extends State<MyCoins> {
         initialDate: new DateTime.now(),
         firstDate: new DateTime(2016),
         lastDate: new DateTime(9999));
-    if (picked != null)  setDate(picked);
+    if (picked != null) setDate(picked);
   }
 
   Future<void> setDate(DateTime dateTime) async {
@@ -308,6 +437,35 @@ class _JarWidgetState extends State<JarWidget> {
         return Stack(
           fit: StackFit.expand,
           children: <Widget>[
+            OverlayContainer(
+              show: globals.ShowHelp && this.widget._jar.coins.length > 0,
+              // Let's position this overlay to the right of the button.
+              position: OverlayContainerPosition(10, 1),
+              // The content inside the overlay.
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(top: 0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Color.fromARGB(255, 53, 83, 165),
+                    width: 1,
+                  ),
+                  borderRadius: new BorderRadius.all(
+                    Radius.circular(8),
+                  ),
+                  color: Colors.white,
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Color.fromARGB(128, 53, 83, 165),
+                      blurRadius: 2,
+                      spreadRadius: 4,
+                    )
+                  ],
+                ),
+                child:
+                    Text("Swipe up on any HabitCoin\nin the jar to remove it."),
+              ),
+            ),
             Container(
               child: this.widget._jar.day.complete()
                   ? Container(
@@ -482,8 +640,10 @@ class _CoinRowState extends State<CoinRow> {
             .coins
             .map(
               (coin) => LongPressDraggable(
+                
                 hapticFeedbackOnStart: true,
                 maxSimultaneousDrags: isToday ? 1 : 0,
+
                 onDragCompleted: () {
                   setState(() {
                     //this.widget.coins.remove(coin);
@@ -521,32 +681,65 @@ class _CoinRowState extends State<CoinRow> {
                   ),
                 ),
 
-                feedback: Container(
-                  margin: EdgeInsets.all(6),
-                  width: 120.0,
-                  height: 120.0,
-                  decoration: new BoxDecoration(
-                    color: Colors.white.withOpacity(.8),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.black,
-                      width: 4,
+                feedback: Column(
+                  children: <Widget>[
+                    OverlayContainer(
+                      show: globals.ShowHelp,
+                      // Let's position this overlay to the right of the button.
+                      position: OverlayContainerPosition(20, 1),
+                      // The content inside the overlay.
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(top: 0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Color.fromARGB(255, 53, 83, 165),
+                            width: 1,
+                          ),
+                          borderRadius: new BorderRadius.all(
+                            Radius.circular(8),
+                          ),
+                          color: Colors.white,
+                          boxShadow: <BoxShadow>[
+                            BoxShadow(
+                              color: Color.fromARGB(128, 53, 83, 165),
+                              blurRadius: 2,
+                              spreadRadius: 4,
+                            )
+                          ],
+                        ),
+                        child: Text(
+                            "Drop the HabitCoin into the jar\nto mark it as complete."),
+                      ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black54,
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: Offset(0.0, 0),
-                      )
-                    ],
-                  ),
-                  child: Center(
-                    child: Icon(
-                      coin.Icon,
-                      size: 44,
+                    Container(
+                      margin: EdgeInsets.all(6),
+                      width: 120.0,
+                      height: 120.0,
+                      decoration: new BoxDecoration(
+                        color: Colors.white.withOpacity(.8),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black54,
+                            spreadRadius: 1,
+                            blurRadius: 4,
+                            offset: Offset(0.0, 0),
+                          )
+                        ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          coin.Icon,
+                          size: 44,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
                 childWhenDragging: Container(
                   margin: EdgeInsets.all(6),

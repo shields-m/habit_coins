@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'models.dart';
 
-
+Map<String,Person> people = new Map();
 
 bool ScheduleLoaded = false;
 bool DaysLoaded = false;
@@ -19,9 +19,13 @@ DayList days = new DayList();
 
 bool UseCloudSync = false;
 
+bool ShowHelp = false;
+
 String CurrentUser = '';
 
-String TeamID = '';
+//String TeamID = '';
+
+UserDetails userDetails = new UserDetails();
 
 Team myTeam;
 

@@ -35,15 +35,15 @@ class _SplashState extends State<Splash> {
         onboardingComplete = x;
         if (onboardingComplete) {
           //print('onboarding complete');
-
+          globals.ShowHelp = false;
           globals.UseCloudSync = false;
           auth.getCurrentUser().then((u) {
             if (u != null) {
               globals.CurrentUser = u.uid;
               globals.UseCloudSync = true;
-              getTeamIDForCurrentUser().then((id) {
-                globals.TeamID = id;
-                if (id != 'null' && id != '') {
+              getUserDetailsForCurrentUser().then((d) {
+                globals.userDetails = d;
+                if (d.TeamID != 'null' && d.TeamID != '') {
                   
                     globals.myTeam = new Team();
                   
@@ -100,6 +100,7 @@ class _SplashState extends State<Splash> {
           });
         } else {
           print('onboarding not complete');
+          globals.ShowHelp = true;
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => OnboardingPage()));
         }

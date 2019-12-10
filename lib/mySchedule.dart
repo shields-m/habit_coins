@@ -120,41 +120,10 @@ class _MyScheduleState extends State<MySchedule> {
             Column(
               children: allCoins,
             ),
-            //Padding(padding: EdgeInsets.symmetric(vertical: 10),),
-            //         flatbutton(child: text('hello'),
-            //         onpressed: (){
-            //            loadschedule().then((s) {
-            //   setstate(() {
-            //     globals.mainschedule = s;
-            //     showdialog(
-            //                             context: context,
-            //                             builder: (buildcontext context) {
-            //                               // return object of type dialog
-            //                               return alertdialog(
-            //                                 title: text("?"),
-            //                                 actions: <widget>[
-            //                                   flatbutton(
-            //                                     child: text("no"),
-            //                                     onpressed: () {
-            //                                       navigator.pop(context);
-            //                                     },
-            //                                   ),
-            //                                   flatbutton(
-            //                                     child: text("yes"),
-            //                                     onpressed: () {
+  
 
-            //                                     },
-            //                                   )
-            //                                 ],
-            //                                 content: text(
-            //                                     globals.mainschedule.prt()
-            //                                     ),);
-            //                             },
-            //                           );
-            //   });
-            // });
 
-            //         },)
+
           ],
         ),
       ),
