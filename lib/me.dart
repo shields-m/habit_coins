@@ -17,7 +17,7 @@ class Me extends StatefulWidget {
   @override
   _MeState createState() => _MeState();
 }
-
+ 
 class _MeState extends State<Me> {
   @override
   void initState() {
@@ -32,6 +32,7 @@ class _MeState extends State<Me> {
 
   @override
   Widget build(BuildContext context) {
+    int x = 0;
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       decoration: BoxDecoration(
