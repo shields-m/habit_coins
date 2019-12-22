@@ -56,7 +56,7 @@ class _SettingsState extends State<Settings>
               height: 100,
             ),
             Image.asset(
-              'assets/images/habitcoins logo.png',
+              'assets/images/habitcoins ',
               fit: BoxFit.contain,
               height: 40,
             ),
@@ -581,7 +581,7 @@ Container(
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-                child: Image.asset('assets/images/habitcoins logo.png'),
+                child: Image.asset('assets/images/habitcoinslogo.png'),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 0),

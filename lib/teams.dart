@@ -36,7 +36,7 @@ class _TeamsListState extends State<TeamsList> {
               height: 100,
             ),
             Image.asset(
-              'assets/images/habitcoins logo.png',
+              'assets/images/habitcoinslogo.png',
               fit: BoxFit.contain,
               height: 40,
             ),

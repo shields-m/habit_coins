@@ -115,7 +115,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                 height: 100,
               ),
               Image.asset(
-                'assets/images/habitcoins logo.png',
+                'assets/images/habitcoinslogo.png',
                 fit: BoxFit.contain,
                 height: 40,
               ),
@@ -213,7 +213,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
         child: CircleAvatar(
           backgroundColor: Color.fromARGB(255, 53, 83, 165),
           radius: 60.0,
-          child: Image.asset('assets/images/habitcoins logo.png'),
+          child: Image.asset('assets/images/habitcoinslogo.png'),
         ),
       ),
     );

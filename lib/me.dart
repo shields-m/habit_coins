@@ -32,7 +32,6 @@ class _MeState extends State<Me> {
 
   @override
   Widget build(BuildContext context) {
-    int x = 0;
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       decoration: BoxDecoration(

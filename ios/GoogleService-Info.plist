@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>128641382674-pitkulpg05gvrviibt6ra229p2vagbc5.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.128641382674-pitkulpg05gvrviibt6ra229p2vagbc5</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>128641382674-u1ju1gvnktfi19q7feoi6gggeq1noeqo.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDG2KwzrNQN4suE9umPx83-z5Gh0Dd0ce8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>128641382674</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.unlesscoaching.habitCoins</string>
+	<key>PROJECT_ID</key>
+	<string>habitcoins-47ad9</string>
+	<key>STORAGE_BUCKET</key>
+	<string>habitcoins-47ad9.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:128641382674:ios:b7ad498cb6a0a5272e9bcb</string>
+	<key>DATABASE_URL</key>
+	<string>https://habitcoins-47ad9.firebaseio.com</string>
+</dict>
+</plist>

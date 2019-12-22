@@ -127,7 +127,7 @@ class _SplashState extends State<Splash> {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 0),
               child: Image.asset(
-                'assets/images/habitcoins logo.png',
+                'assets/images/habitcoinslogo.png',
                 fit: BoxFit.contain,
                 height: 150,
               ),
