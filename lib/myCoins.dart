@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:habit_coins/localData.dart';
 import 'package:habit_coins/models.dart';
@@ -9,22 +9,30 @@ import 'package:habit_coins/globals.dart' as globals;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:overlay_container/overlay_container.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audio_cache.dart';
 
 GlobalKey<_CoinRowState> _coinRowStateKey = GlobalKey();
 DateTime selectedDate;
 bool isFuture;
 bool isToday;
 bool isPast;
-
+AudioCache player = AudioCache(prefix: 'audio/');
 DateTime _currentMonth;
 String _currentMonthName;
+Random rand;
+
 
 class MyCoins extends StatefulWidget {
   // bool ShowHelp;
+  
+
   final Function function;
 
   MyCoins({Key key, this.function}) : super(key: key) {
     //ShowHelp = false;
+    
+    rand = new Random();
     selectedDate =
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     isFuture = false;
@@ -266,7 +274,7 @@ class MyCoinsState extends State<MyCoins> {
           msg: "You can only go back 30 days in this view",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
+          timeInSecForIosWeb: 1,
           backgroundColor: Colors.black.withOpacity(0.8),
           textColor: Colors.white,
           fontSize: 16.0);
@@ -275,7 +283,7 @@ class MyCoinsState extends State<MyCoins> {
           msg: "You can only go forward two weeks in this view",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
+          timeInSecForIosWeb: 1,
           backgroundColor: Colors.black.withOpacity(0.8),
           textColor: Colors.white,
           fontSize: 16.0);
@@ -413,6 +421,10 @@ class _JarWidgetState extends State<JarWidget> {
       },
       onAccept: (Coin data) {
         if (!this.widget._jar.coins.contains(data)) {
+           if(globals.playSounds){
+player.play('Coin' + (rand.nextInt(2) + 1).toString() + '.mp3');
+           }
+    
           setState(() {
             String dt = globals.getDayKey(selectedDate);
             // this.widget._jar.coins.add(data);

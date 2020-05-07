@@ -442,6 +442,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   globals.ShowHelp = true;
                   saveName(txtName.text);
                   saveOnboardingComplete();
+                  globals.playSounds = true;
+                  saveSoundSettings();
                   if (!LoggedIn) {
                     saveSchedule(schedule);
 

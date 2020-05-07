@@ -467,6 +467,28 @@ Future<File> saveOnboardingComplete() async {
   return file.writeAsString(true.toString());
 }
 
+Future<File> saveSoundSettings() async {
+  final path = await _localPath;
+  File file = File('$path/sound.json');
+
+  return file.writeAsString(globals.playSounds.toString());
+}
+
+Future<bool> loadSoundSetting() async {
+  // try {
+  final path = await _localPath;
+
+  File file = File('$path/sound.json');
+  if (file.existsSync()) {
+    String contents = await file.readAsString();
+//print(contents);
+
+    return contents == 'true';
+  } else {
+    return true;
+  }
+}
+
 Future<bool> loadOnboardStatus() async {
   // try {
   final path = await _localPath;

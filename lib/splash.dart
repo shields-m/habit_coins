@@ -35,6 +35,7 @@ class _SplashState extends State<Splash> {
         onboardingComplete = x;
         if (onboardingComplete) {
           //print('onboarding complete');
+           loadSoundSetting().then((value) => globals.playSounds = value);
           globals.ShowHelp = false;
           globals.UseCloudSync = false;
           auth.getCurrentUser().then((u) {

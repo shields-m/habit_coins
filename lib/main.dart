@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'myCoins.dart' ;
+import 'package:habit_coins/notifications.dart';
 import 'package:habit_coins/me.dart';
 import 'package:habit_coins/settings.dart';
 import 'package:habit_coins/splash.dart';
@@ -144,6 +145,14 @@ final GlobalKey<MyCoinsState> _key = GlobalKey();
               openSettings();
             },
           ),
+          /*IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () {
+              globals.ShowHelp = false;
+              if(_currentIndex == 0) _key.currentState.refresh();
+              openNotifications();
+            },
+          ),*/
         ],
       ),
       body: _children[_currentIndex],
@@ -168,6 +177,15 @@ final GlobalKey<MyCoinsState> _key = GlobalKey();
   void openSettings() async {
     globals.ShowHelp = false;
     final Settings page = new Settings();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
+
+  void openNotifications() async {
+    globals.ShowHelp = false;
+    final NotificationTest page = new NotificationTest();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => page),

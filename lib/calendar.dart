@@ -76,7 +76,7 @@ class _CalendarState extends State<Calendar> {
           msg: "The future is currently unknown",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
+          timeInSecForIosWeb: 1,
           backgroundColor: Colors.black.withOpacity(0.8),
           textColor: Colors.white,
           fontSize: 16.0);
@@ -137,6 +137,7 @@ class _CalendarState extends State<Calendar> {
     }
     //return x;
   }
+
 
   void showDay(int dayOfMonth) async {
     DateTime date = DateTime(this.widget._currentMonth.year,
@@ -275,7 +276,7 @@ class _CalendarState extends State<Calendar> {
           msg: "No HabitCoin Data for selected day",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
+          timeInSecForIosWeb: 1,
           backgroundColor: Colors.black.withOpacity(0.8),
           textColor: Colors.white,
           fontSize: 16.0);

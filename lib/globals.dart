@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'models.dart';
 
 Map<String,Person> people = new Map();
-
+bool playSounds = true;
 bool ScheduleLoaded = false;
 bool DaysLoaded = false;
 bool MonthsLoaded = false;

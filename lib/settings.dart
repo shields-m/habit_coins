@@ -56,7 +56,7 @@ class _SettingsState extends State<Settings>
               height: 100,
             ),
             Image.asset(
-              'assets/images/habitcoins ',
+              'assets/images/habitcoinslogo.png',
               fit: BoxFit.contain,
               height: 40,
             ),
@@ -204,6 +204,68 @@ void sendPasswordResetEmail()
                   )),
               subtitle: Text(this.widget.Name),
               trailing: Icon(Icons.person),
+            ),
+          ),
+          Container(
+          
+          decoration: BoxDecoration(
+            color: Color.fromARGB(128, 53, 83, 165),
+            
+            border: Border(
+              top: BorderSide(
+                color: Color.fromARGB(128, 53, 83, 165),
+                width: 1,
+              ),
+            ),
+            //borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                'App Settings',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Color.fromARGB(128, 53, 83, 165),
+                  width: 1,
+                ),
+              ),
+              //borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: ListTile(
+              //onTap: () {
+                //openScheduleScreen();
+              //},
+              title: Text(
+                'Play Sounds',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              subtitle: Text('Setup your HabitCoins'),
+              trailing: Switch(
+                
+  value: globals.playSounds,
+  onChanged: (value) {
+    setState(() {
+    globals.playSounds = value;
+    saveSoundSettings();
+    });
+  },
+  activeTrackColor: Color.fromARGB(128, 53, 83, 165), 
+  activeColor: Color.fromARGB(128, 53, 83, 255),
+),
             ),
           ),
         Container(
@@ -695,7 +757,7 @@ Container(
                               msg: "Your team does not share data with Unless.",
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.CENTER,
-                              timeInSecForIos: 1,
+                              timeInSecForIosWeb: 1,
                               backgroundColor: Colors.black.withOpacity(0.8),
                               textColor: Colors.white,
                               fontSize: 16.0);

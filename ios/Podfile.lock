@@ -158,6 +158,8 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
+  - audioplayers (0.0.1):
+    - Flutter
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
     - BoringSSL-GRPC/Interface (= 0.0.3)
@@ -167,6 +169,8 @@ PODS:
   - cloud_firestore (0.0.1):
     - Firebase/Core
     - Firebase/Firestore (~> 6.0)
+    - Flutter
+  - cloud_firestore_web (0.1.0):
     - Flutter
   - Firebase/Auth (6.14.0):
     - Firebase/CoreOnly
@@ -180,11 +184,15 @@ PODS:
     - Firebase/CoreOnly
     - FirebaseFirestore (~> 1.8.2)
   - firebase_auth (0.0.1):
-    - Firebase/Auth (~> 6.0)
+    - Firebase/Auth (~> 6.3)
     - Firebase/Core
+    - Flutter
+  - firebase_auth_web (0.1.0):
     - Flutter
   - firebase_core (0.0.1):
     - Firebase/Core
+    - Flutter
+  - firebase_core_web (0.1.0):
     - Flutter
   - FirebaseAnalytics (6.1.7):
     - FirebaseCore (~> 6.5)
@@ -232,6 +240,8 @@ PODS:
     - GoogleUtilities/Environment (~> 6.4)
     - GoogleUtilities/UserDefaults (~> 6.4)
   - Flutter (1.0.0)
+  - flutter_local_notifications (0.0.1):
+    - Flutter
   - fluttertoast (0.0.2):
     - Flutter
   - GoogleAppMeasurement (6.1.7):
@@ -287,14 +297,22 @@ PODS:
   - nanopb/encode (0.3.9011)
   - path_provider (0.0.1):
     - Flutter
+  - path_provider_macos (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
+  - audioplayers (from `.symlinks/plugins/audioplayers/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
+  - cloud_firestore_web (from `.symlinks/plugins/cloud_firestore_web/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
+  - firebase_auth_web (from `.symlinks/plugins/firebase_auth_web/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
+  - firebase_core_web (from `.symlinks/plugins/firebase_core_web/ios`)
   - Flutter (from `Flutter`)
+  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - path_provider_macos (from `.symlinks/plugins/path_provider_macos/ios`)
 
 SPEC REPOS:
   trunk:
@@ -320,26 +338,42 @@ SPEC REPOS:
     - nanopb
 
 EXTERNAL SOURCES:
+  audioplayers:
+    :path: ".symlinks/plugins/audioplayers/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
+  cloud_firestore_web:
+    :path: ".symlinks/plugins/cloud_firestore_web/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
+  firebase_auth_web:
+    :path: ".symlinks/plugins/firebase_auth_web/ios"
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
+  firebase_core_web:
+    :path: ".symlinks/plugins/firebase_core_web/ios"
   Flutter:
     :path: Flutter
+  flutter_local_notifications:
+    :path: ".symlinks/plugins/flutter_local_notifications/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
+  path_provider_macos:
+    :path: ".symlinks/plugins/path_provider_macos/ios"
 
 SPEC CHECKSUMS:
   abseil: 18063d773f5366ff8736a050fe035a28f635fd27
+  audioplayers: 84f968cea3f2deab00ec4f8ff53358b3c0b3992c
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
-  cloud_firestore: c9493dd01ad88934d926e18cc5a92a0129bf2c32
+  cloud_firestore: 56ea1a42d4a4b3c9cf22e0e0f73140b5d07376a8
+  cloud_firestore_web: 9ec3dc7f5f98de5129339802d491c1204462bfec
   Firebase: 0219bb4782eb1406f1b9b0628a2e625484ce910d
-  firebase_auth: 1e3b7bdd37b9fbd4ef75ba1d985b00be09e02d3d
-  firebase_core: ae55ea92448ec8675d325da4db22cf3b4d58a54d
+  firebase_auth: f8287325aae894aff045dff38bf0667cbeb49563
+  firebase_auth_web: 0955c07bcc06e84af76b9d4e32e6f31518f2d7de
+  firebase_core: 0d8be0e0d14c4902953aeb5ac5d7316d1fe4b978
+  firebase_core_web: d501d8b946b60c8af265428ce483b0fff5ad52d1
   FirebaseAnalytics: f68b9f3f1241385129ae0a83b63627fc420c05e5
   FirebaseAuth: 831577b184ecaba38bc886768c1c22a450cc44e3
   FirebaseAuthInterop: 0ffa57668be100582bb7643d4fcb7615496c41fc
@@ -349,6 +383,7 @@ SPEC CHECKSUMS:
   FirebaseFirestore: 52120e2833f804a874ba1a9f59aab864a8ae2286
   FirebaseInstanceID: ce993a3c3670a8f5d47ce371ac5d143c560608c5
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_local_notifications: 9e4738ce2471c5af910d961a6b7eadcf57c50186
   fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
   GoogleAppMeasurement: db118eb61a97dd8c4f7014e368d3c335cbbcf80a
   GoogleDataTransport: 8e9b210c97d55fbff306cc5468ff91b9cb32dcf5
@@ -359,8 +394,9 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 43b8b64263023d4f32caa0b40f4c8bfa3c5f36d8
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
-  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
+  path_provider_macos: f760a3c5b04357c380e2fddb6f9db6f3015897e0
 
 PODFILE CHECKSUM: 5c9de23068f512b253c1173b275e9decbff916fa
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.0
